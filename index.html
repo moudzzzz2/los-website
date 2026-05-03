@@ -1246,13 +1246,7 @@
     }
   </style>
   <style>
-    /* ─── CURSOR ─── */
-    .cursor { position:fixed;width:12px;height:12px;background:var(--red);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.2s,height 0.2s,opacity 0.2s;mix-blend-mode:normal; }
-    .cursor-ring { position:fixed;width:36px;height:36px;border:1.5px solid rgba(232,25,44,0.5);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:all 0.12s ease;mix-blend-mode:normal; }
-    .cursor-glow { position:fixed;width:200px;height:200px;background:radial-gradient(circle,rgba(232,25,44,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:99997;transform:translate(-50%,-50%);transition:all 0.3s ease; }
-    body:has(.cursor) * { cursor:none !important; }
-    .cursor.hovering { width:20px;height:20px;background:rgba(232,25,44,0.5); }
-    .cursor-ring.hovering { width:52px;height:52px;border-color:rgba(232,25,44,0.8); }
+    /* cursor removed — using default */
 
     /* ─── CANVAS ─── */
     #particleCanvas { position:fixed;inset:0;z-index:0;pointer-events:none; }
@@ -1263,9 +1257,7 @@
     .shape-hex { clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);border-radius:0; }
     @keyframes floatShape { 0%{transform:translateY(0) rotate(0deg);opacity:0.4} 50%{opacity:0.8} 100%{transform:translateY(-120vh) rotate(720deg);opacity:0} }
 
-    /* ─── SCANLINE ─── */
-    .scanline { position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(232,25,44,0.4),transparent);z-index:9998;pointer-events:none;animation:scan 8s linear infinite; }
-    @keyframes scan { 0%{top:-2px} 100%{top:100vh} }
+    /* scanline removed */
 
     /* ─── AURORA BG ─── */
     .aurora { position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden; }
@@ -1391,11 +1383,7 @@
 <body>
 
 <!-- ─── GLOBAL FX ELEMENTS ─── -->
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
-<div class="cursor-glow" id="cursorGlow"></div>
 <div class="mouse-orb" id="mouseOrb"></div>
-<div class="scanline"></div>
 <div class="scroll-progress" id="scrollProgress"></div>
 <canvas id="particleCanvas"></canvas>
 
@@ -2607,31 +2595,13 @@
 </footer>
 
 <script>
-  // ─── CUSTOM CURSOR ───
-  const cursor = document.getElementById('cursor');
-  const cursorRing = document.getElementById('cursorRing');
-  const cursorGlow = document.getElementById('cursorGlow');
+  // ─── MOUSE ORB ───
   const mouseOrb = document.getElementById('mouseOrb');
   let mx = window.innerWidth/2, my = window.innerHeight/2;
-  let rx = mx, ry = my, gx = mx, gy = my;
 
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
-    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
     mouseOrb.style.left = mx + 'px'; mouseOrb.style.top = my + 'px';
-  });
-
-  (function animCursor() {
-    rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
-    gx += (mx - gx) * 0.06; gy += (my - gy) * 0.06;
-    cursorRing.style.left = rx + 'px'; cursorRing.style.top = ry + 'px';
-    cursorGlow.style.left = gx + 'px'; cursorGlow.style.top = gy + 'px';
-    requestAnimationFrame(animCursor);
-  })();
-
-  document.querySelectorAll('a,button,[data-tab],.service-card,.ai-card,.pricing-card,.testimonial-card,.how-step').forEach(el => {
-    el.addEventListener('mouseenter', () => { cursor.classList.add('hovering'); cursorRing.classList.add('hovering'); });
-    el.addEventListener('mouseleave', () => { cursor.classList.remove('hovering'); cursorRing.classList.remove('hovering'); });
   });
 
   // ─── PARTICLE CANVAS ───
