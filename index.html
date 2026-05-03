@@ -243,7 +243,12 @@
       font-size: 14px;
       color: white;
       letter-spacing: 0.5px;
-      box-shadow: 0 0 20px var(--red-glow);
+      box-shadow: 0 0 16px var(--red-glow), 0 0 40px rgba(232,25,44,0.25), 0 0 80px rgba(232,25,44,0.1);
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+    @keyframes logoPulse {
+      0%,100% { box-shadow: 0 0 16px var(--red-glow), 0 0 40px rgba(232,25,44,0.25), 0 0 80px rgba(232,25,44,0.1); }
+      50% { box-shadow: 0 0 24px rgba(232,25,44,0.8), 0 0 60px rgba(232,25,44,0.4), 0 0 100px rgba(232,25,44,0.15); }
     }
     .nav-logo-text {
       font-family: 'Space Grotesk', sans-serif;
@@ -540,9 +545,6 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
-    }
-    .services-grid .service-card:first-child {
-      grid-column: span 2;
     }
 
     .service-card {
@@ -932,51 +934,76 @@
     .ai-layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 80px;
-      align-items: center;
+      gap: 64px;
+      align-items: start;
       position: relative;
     }
-
     .ai-cards {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
     .ai-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
+      border-radius: 20px;
+      padding: 28px 24px;
       display: flex;
-      gap: 18px;
-      align-items: flex-start;
-      transition: all 0.3s;
+      flex-direction: column;
+      gap: 14px;
+      transition: all 0.35s cubic-bezier(0.23,1,0.32,1);
       cursor: default;
+      position: relative;
+      overflow: hidden;
     }
-    .ai-card:hover {
-      border-color: rgba(232,25,44,0.4);
-      transform: translateX(6px);
-      box-shadow: -4px 0 0 var(--red), 0 8px 30px rgba(0,0,0,0.3);
+    .ai-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(232,25,44,0.07) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.35s;
     }
+    .ai-card:hover { border-color: rgba(232,25,44,0.45); transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 30px rgba(232,25,44,0.08); }
+    .ai-card:hover::before { opacity: 1; }
     .ai-card-icon {
-      font-size: 28px;
-      flex-shrink: 0;
-      width: 48px;
-      height: 48px;
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: rgba(232,25,44,0.12);
+      border: 1px solid rgba(232,25,44,0.2);
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 24px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      flex-shrink: 0;
     }
+    .ai-card:hover .ai-card-icon { transform: scale(1.1) rotate(-5deg); box-shadow: 0 0 20px var(--red-glow); }
     .ai-card-title {
+      font-family: 'Space Grotesk', sans-serif;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--white);
-      margin-bottom: 6px;
+      line-height: 1.3;
     }
     .ai-card-desc {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--muted);
-      line-height: 1.6;
+      line-height: 1.65;
+    }
+    .ai-card-stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(232,25,44,0.1);
+      border: 1px solid rgba(232,25,44,0.2);
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #ff8090;
+      margin-top: auto;
     }
 
     /* ─── PRICING ─── */
@@ -1119,7 +1146,7 @@
     .testimonials-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      gap: 20px;
     }
     .testimonial-card {
       background: var(--surface);
@@ -1352,7 +1379,6 @@
       /* services */
       .services-header { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 40px; }
       .services-grid { grid-template-columns: 1fr; gap: 16px; }
-      .services-grid .service-card:first-child { grid-column: span 1; }
       .service-card { padding: 24px 20px; }
 
       /* industries */
@@ -1550,7 +1576,7 @@
 <!-- ─── FLOATING ACTION BUTTON ─── -->
 <div class="fab" id="fab">
   <div class="fab-menu" id="fabMenu">
-    <a class="fab-item" href="https://wa.me/96170000000" target="_blank">💬 WhatsApp Us</a>
+    <a class="fab-item" href="https://wa.me/96170090876" target="_blank">💬 WhatsApp Us</a>
     <button class="fab-item" onclick="openModal()">📅 Book Consultation</button>
     <a class="fab-item" href="mailto:hello@los.lb">✉️ Email Us</a>
   </div>
@@ -1889,6 +1915,126 @@
       </ul>
       <div class="service-footer">
         <span class="service-ai-tag">✦ Auto-Content Generation</span>
+        <div class="service-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- Booking & Scheduling -->
+    <div class="service-card">
+      <div class="service-card-top">
+        <div class="service-icon">📅</div>
+        <div class="service-stat"><div class="service-stat-num">80%</div><div class="service-stat-label">Less No-Shows</div></div>
+      </div>
+      <div class="service-name">Booking & Scheduling</div>
+      <div class="service-desc">Let customers book appointments, tables, or services 24/7 — no phone calls, no back-and-forth. Automated reminders slash no-shows and keep your calendar full without effort.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Online booking page branded to your business</li>
+        <li><span class="service-feat-icon">✓</span>Automated WhatsApp & SMS reminders</li>
+        <li><span class="service-feat-icon">✓</span>Smart calendar with staff availability management</li>
+        <li><span class="service-feat-icon">✓</span>Waitlist management & last-minute slot filling</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ AI Schedule Optimizer</span>
+        <div class="service-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- Loyalty & Retention -->
+    <div class="service-card">
+      <div class="service-card-top">
+        <div class="service-icon">🎁</div>
+        <div class="service-stat"><div class="service-stat-num">2.5×</div><div class="service-stat-label">Repeat Visits</div></div>
+      </div>
+      <div class="service-name">Loyalty & Retention</div>
+      <div class="service-desc">Turn one-time buyers into regulars. Our AI-powered loyalty engine rewards your best customers, re-engages dormant ones, and personalizes every offer so people actually use it.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Points, stamps & tier-based reward programs</li>
+        <li><span class="service-feat-icon">✓</span>AI-triggered re-engagement campaigns</li>
+        <li><span class="service-feat-icon">✓</span>Personalized offers based on purchase history</li>
+        <li><span class="service-feat-icon">✓</span>Branded digital loyalty card (no plastic needed)</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ Smart Reward Engine</span>
+        <div class="service-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- HR & Staff Management -->
+    <div class="service-card">
+      <div class="service-card-top">
+        <div class="service-icon">👥</div>
+        <div class="service-stat"><div class="service-stat-num">6h</div><div class="service-stat-label">Admin Saved/Week</div></div>
+      </div>
+      <div class="service-name">HR & Staff Management</div>
+      <div class="service-desc">Managing staff across shifts shouldn't take your whole Sunday. We give you a digital HR hub — timesheets, payroll, leave requests, and performance tracking all in one place.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Digital timesheets & shift scheduling</li>
+        <li><span class="service-feat-icon">✓</span>Automated payroll calculations</li>
+        <li><span class="service-feat-icon">✓</span>Leave & absence tracking with approval flows</li>
+        <li><span class="service-feat-icon">✓</span>Staff performance dashboards</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ AI Shift Planner</span>
+        <div class="service-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- Delivery & Order Management -->
+    <div class="service-card">
+      <div class="service-card-top">
+        <div class="service-icon">🛵</div>
+        <div class="service-stat"><div class="service-stat-num">94%</div><div class="service-stat-label">On-Time Rate</div></div>
+      </div>
+      <div class="service-name">Delivery & Order Management</div>
+      <div class="service-desc">Take orders from your own website, WhatsApp, or app — no third-party commission. Manage drivers, track deliveries live, and keep customers updated every step of the way.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Direct ordering — no Talabat commission</li>
+        <li><span class="service-feat-icon">✓</span>Live delivery tracking for customers</li>
+        <li><span class="service-feat-icon">✓</span>Driver app with route optimization</li>
+        <li><span class="service-feat-icon">✓</span>Automated order confirmation & ETA updates</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ AI Route Optimizer</span>
+        <div class="service-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- Analytics & Reporting -->
+    <div class="service-card">
+      <div class="service-card-top">
+        <div class="service-icon">📡</div>
+        <div class="service-stat"><div class="service-stat-num">360°</div><div class="service-stat-label">Business View</div></div>
+      </div>
+      <div class="service-name">Analytics & Reporting</div>
+      <div class="service-desc">Stop guessing and start knowing. One dashboard shows every metric that matters — sales, foot traffic, top products, customer trends — updated in real time so you always know where to focus.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Real-time sales, revenue & profit dashboards</li>
+        <li><span class="service-feat-icon">✓</span>Customer behaviour & retention analytics</li>
+        <li><span class="service-feat-icon">✓</span>Automated weekly & monthly email reports</li>
+        <li><span class="service-feat-icon">✓</span>AI-generated growth recommendations</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ AI Business Insights</span>
+        <div class="service-arrow">→</div>
+      </div>
+    </div>
+
+    <!-- Legacy System Migration -->
+    <div class="service-card">
+      <div class="service-card-top">
+        <div class="service-icon">🔄</div>
+        <div class="service-stat"><div class="service-stat-num">Zero</div><div class="service-stat-label">Downtime</div></div>
+      </div>
+      <div class="service-name">Legacy System Migration</div>
+      <div class="service-desc">Stuck on outdated software from 10 years ago? We migrate all your data — customers, products, orders, history — to a modern stack without losing a single record or a single day of business.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Full data migration with zero loss guaranteed</li>
+        <li><span class="service-feat-icon">✓</span>Staff training & onboarding included</li>
+        <li><span class="service-feat-icon">✓</span>Parallel running until you're confident</li>
+        <li><span class="service-feat-icon">✓</span>30-day post-migration support</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ Smooth Transition</span>
         <div class="service-arrow">→</div>
       </div>
     </div>
@@ -2644,31 +2790,39 @@
     <div class="ai-cards reveal">
       <div class="ai-card">
         <div class="ai-card-icon">🤖</div>
-        <div>
-          <div class="ai-card-title">AI Customer Assistant</div>
-          <div class="ai-card-desc">24/7 WhatsApp and web chatbot that answers questions, takes orders, and books appointments — in Arabic and English.</div>
-        </div>
+        <div class="ai-card-title">AI Customer Assistant</div>
+        <div class="ai-card-desc">A 24/7 chatbot on WhatsApp and your website that answers questions, takes orders, books appointments, and handles complaints — fluently in Arabic and English, while you sleep.</div>
+        <div class="ai-card-stat">✦ Avg 3 min response → instant</div>
       </div>
       <div class="ai-card">
         <div class="ai-card-icon">📈</div>
-        <div>
-          <div class="ai-card-title">Revenue Intelligence</div>
-          <div class="ai-card-desc">AI analyzes your sales patterns and surfaces hidden opportunities — slow hours, underperforming products, pricing gaps.</div>
-        </div>
+        <div class="ai-card-title">Revenue Intelligence</div>
+        <div class="ai-card-desc">AI continuously scans your sales data and flags exactly where you're leaving money on the table — slow hours, underpriced items, high-margin products you're not promoting enough.</div>
+        <div class="ai-card-stat">✦ Avg +34% revenue in 90 days</div>
       </div>
       <div class="ai-card">
         <div class="ai-card-icon">✍️</div>
-        <div>
-          <div class="ai-card-title">AI Content Engine</div>
-          <div class="ai-card-desc">Generates social media posts, promotions, and menu descriptions tailored to your brand voice — in seconds.</div>
-        </div>
+        <div class="ai-card-title">AI Content Engine</div>
+        <div class="ai-card-desc">Generates ready-to-post Instagram captions, Facebook ads, WhatsApp promotions, and menu copy — all tailored to your brand voice and scheduled automatically. No agency needed.</div>
+        <div class="ai-card-stat">✦ 10+ posts generated per week</div>
       </div>
       <div class="ai-card">
         <div class="ai-card-icon">🔮</div>
-        <div>
-          <div class="ai-card-title">Predictive Analytics</div>
-          <div class="ai-card-desc">Know tomorrow's sales today. AI forecasts demand so you can staff correctly and prep exactly what's needed.</div>
-        </div>
+        <div class="ai-card-title">Predictive Analytics</div>
+        <div class="ai-card-desc">Know tomorrow's demand today. The AI forecasts sales, foot traffic, and inventory needs so you staff correctly, prep the right amount, and never waste product or disappoint customers.</div>
+        <div class="ai-card-stat">✦ 92% forecast accuracy</div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-icon">🛡️</div>
+        <div class="ai-card-title">Fraud & Anomaly Detection</div>
+        <div class="ai-card-desc">AI watches every transaction and flags suspicious patterns in real time — employee theft, double charges, unusual refunds — before they become a costly problem.</div>
+        <div class="ai-card-stat">✦ Catches 98% of anomalies</div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-icon">🌍</div>
+        <div class="ai-card-title">Arabic-First AI</div>
+        <div class="ai-card-desc">Every AI tool we build works natively in Lebanese Arabic, Modern Standard Arabic, and English. Your customers communicate the way they're comfortable — and the AI understands every word.</div>
+        <div class="ai-card-stat">✦ Built for Lebanon, not translated</div>
       </div>
     </div>
   </div>
@@ -2684,8 +2838,8 @@
   <div class="pricing-grid reveal">
     <div class="pricing-card">
       <div class="pricing-plan">Starter</div>
-      <div class="pricing-price"><sup>$</sup>199</div>
-      <div class="pricing-period">/ month</div>
+      <div class="pricing-price"><sup>$</sup>0</div>
+      <div class="pricing-period">/ month — for now</div>
       <div class="pricing-divider"></div>
       <ul class="pricing-features">
         <li><span class="pricing-check">✓</span>Modern website rebuild</li>
@@ -2700,8 +2854,8 @@
     <div class="pricing-card featured">
       <div class="pricing-badge">Most Popular</div>
       <div class="pricing-plan">Growth</div>
-      <div class="pricing-price"><sup>$</sup>499</div>
-      <div class="pricing-period">/ month</div>
+      <div class="pricing-price"><sup>$</sup>0</div>
+      <div class="pricing-period">/ month — for now</div>
       <div class="pricing-divider"></div>
       <ul class="pricing-features">
         <li><span class="pricing-check">✓</span>Everything in Starter</li>
@@ -2716,8 +2870,8 @@
 
     <div class="pricing-card">
       <div class="pricing-plan">Enterprise</div>
-      <div class="pricing-price">Custom</div>
-      <div class="pricing-period">tailored to you</div>
+      <div class="pricing-price"><sup>$</sup>0</div>
+      <div class="pricing-period">/ month — for now</div>
       <div class="pricing-divider"></div>
       <ul class="pricing-features">
         <li><span class="pricing-check">✓</span>Everything in Growth</li>
@@ -2740,42 +2894,75 @@
   </div>
   <div class="testimonials-grid reveal">
     <div class="testimonial-card">
-      <div class="testimonial-stars">
-        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-      </div>
-      <p class="testimonial-quote">"LOS transformed my restaurant. The AI chatbot handles all our WhatsApp orders and the waste tracking alone saved us $800 a month."</p>
+      <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <p class="testimonial-quote">"LOS transformed my restaurant completely. The AI chatbot handles all our WhatsApp orders and the waste tracking alone saved us $800 a month. I wish I had this 5 years ago."</p>
       <div class="testimonial-author">
         <div class="testimonial-avatar">👨‍🍳</div>
-        <div>
-          <div class="testimonial-name">Karim Nassar</div>
-          <div class="testimonial-role">Owner, Tibne Restaurant — Beirut</div>
-        </div>
+        <div><div class="testimonial-name">Karim Nassar</div><div class="testimonial-role">Owner, Tibne Restaurant — Beirut</div></div>
       </div>
     </div>
     <div class="testimonial-card">
-      <div class="testimonial-stars">
-        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-      </div>
-      <p class="testimonial-quote">"Our café was stuck in 2010. LOS built us a new website, launched our loyalty app, and now 60% of our revenue comes from repeat customers."</p>
+      <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <p class="testimonial-quote">"Our café was stuck in 2010. LOS built us a new website, launched our loyalty app, and now 60% of our revenue comes from repeat customers. The team was incredible."</p>
       <div class="testimonial-author">
         <div class="testimonial-avatar">☕</div>
-        <div>
-          <div class="testimonial-name">Lara Khoury</div>
-          <div class="testimonial-role">Co-Founder, Blend Café — Gemmayzeh</div>
-        </div>
+        <div><div class="testimonial-name">Lara Khoury</div><div class="testimonial-role">Co-Founder, Blend Café — Gemmayzeh</div></div>
       </div>
     </div>
     <div class="testimonial-card">
-      <div class="testimonial-stars">
-        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
-      </div>
-      <p class="testimonial-quote">"Running 3 garages was chaos. LOS gave us one dashboard for everything — parts, jobs, invoices. I finally know what's happening across all branches."</p>
+      <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <p class="testimonial-quote">"Running 3 garages was chaos. LOS gave us one dashboard for everything — parts, jobs, invoices. I finally know what's happening across all branches in real time."</p>
       <div class="testimonial-author">
         <div class="testimonial-avatar">🔧</div>
-        <div>
-          <div class="testimonial-name">Fadi Daou</div>
-          <div class="testimonial-role">CEO, Daou Auto Group — Jounieh</div>
-        </div>
+        <div><div class="testimonial-name">Fadi Daou</div><div class="testimonial-role">CEO, Daou Auto Group — Jounieh</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <p class="testimonial-quote">"The booking system cut our no-shows by 75%. Clients get automatic reminders and can reschedule themselves. My staff stopped wasting time on the phone and started focusing on customers."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">💇</div>
+        <div><div class="testimonial-name">Nour Abi Khalil</div><div class="testimonial-role">Owner, Gloss Salon — Achrafieh</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <p class="testimonial-quote">"We were losing thousands every month to expired stock. LOS's inventory AI now alerts us before anything expires and auto-discounts slow-moving items. The ROI was immediate."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">💊</div>
+        <div><div class="testimonial-name">Georges Frem</div><div class="testimonial-role">Manager, Frem Pharmacy — Zalka</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <p class="testimonial-quote">"LOS built us a full e-commerce store that syncs with our physical shop. Online sales now make up 40% of our revenue — customers we'd never have reached otherwise."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">🛍️</div>
+        <div><div class="testimonial-name">Maya Sassine</div><div class="testimonial-role">Founder, Casa Boutique — Dbayeh</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <p class="testimonial-quote">"The AI content engine posts for us every day. I haven't touched Instagram in two months and our follower count went up 300%. The posts sound exactly like us — it's wild."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">🍞</div>
+        <div><div class="testimonial-name">Rania Haddad</div><div class="testimonial-role">Owner, Miel Bakery — Hamra</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <p class="testimonial-quote">"Our hotel occupancy went from 61% to 89% in one season. Dynamic pricing meant we charged more on peak weekends and filled slow nights with smart promotions. Game-changer."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">🏨</div>
+        <div><div class="testimonial-name">Elie Hanna</div><div class="testimonial-role">GM, Villa Hanna Guesthouse — Byblos</div></div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+      <p class="testimonial-quote">"Parent communication used to be a nightmare — late fees, missed announcements, attendance confusion. LOS automated all of it. Parents are happier, staff are less stressed, fees are up."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">🎓</div>
+        <div><div class="testimonial-name">Charbel Rizk</div><div class="testimonial-role">Director, Horizon Learning Center — Jdeideh</div></div>
       </div>
     </div>
   </div>
@@ -2788,7 +2975,7 @@
     <p class="cta-desc">Join Lebanese businesses already running smarter with LOS. First consultation is free.</p>
     <div class="cta-actions">
       <button onclick="openModal()" class="btn-primary">Book Free Consultation →</button>
-      <a href="https://wa.me/96170000000" target="_blank" class="btn-secondary">💬 WhatsApp Us</a>
+      <a href="https://wa.me/96170090876" target="_blank" class="btn-secondary">💬 WhatsApp Us</a>
     </div>
   </div>
 </section>
