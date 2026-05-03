@@ -535,74 +535,158 @@
       gap: 40px;
     }
 
+    /* ─── SERVICES GRID ─── */
     .services-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
+      gap: 20px;
+    }
+    .services-grid .service-card:first-child {
+      grid-column: span 2;
     }
 
     .service-card {
-      background: var(--bg2);
-      padding: 40px 36px;
-      transition: background 0.3s;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
     }
-    .service-card::before {
+    .service-card::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(232,25,44,0.05) 0%, transparent 60%);
-      opacity: 0;
-      transition: opacity 0.3s;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--red), transparent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
     }
-    .service-card:hover { background: var(--bg3); }
-    .service-card:hover::before { opacity: 1; }
+    .service-card:hover { border-color: rgba(232,25,44,0.35); transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.35), 0 0 40px rgba(232,25,44,0.06); }
+    .service-card:hover::after { transform: scaleX(1); }
 
+    .service-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
     .service-icon {
-      width: 52px; height: 52px;
-      background: rgba(232,25,44,0.12);
+      width: 56px; height: 56px;
+      background: rgba(232,25,44,0.1);
       border: 1px solid rgba(232,25,44,0.2);
-      border-radius: 14px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      margin-bottom: 24px;
-      transition: transform 0.3s, box-shadow 0.3s;
+      font-size: 26px;
+      transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+      flex-shrink: 0;
     }
     .service-card:hover .service-icon {
-      transform: scale(1.1);
-      box-shadow: 0 0 20px var(--red-glow);
+      transform: scale(1.08) rotate(-4deg);
+      box-shadow: 0 0 24px var(--red-glow);
+      background: rgba(232,25,44,0.18);
+    }
+    .service-stat {
+      text-align: right;
+    }
+    .service-stat-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--red);
+      line-height: 1;
+    }
+    .service-stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 2px;
     }
     .service-name {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 20px;
-      font-weight: 600;
+      font-size: 21px;
+      font-weight: 700;
       color: var(--white);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+      line-height: 1.2;
     }
     .service-desc {
       font-size: 14px;
       color: var(--muted);
-      line-height: 1.7;
+      line-height: 1.75;
+      margin-bottom: 22px;
+      flex: 1;
+    }
+    .service-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       margin-bottom: 24px;
+    }
+    .service-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .service-feat-icon {
+      width: 18px; height: 18px;
+      background: rgba(232,25,44,0.12);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+      color: var(--red);
+    }
+    .service-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
     }
     .service-ai-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       background: rgba(212,168,67,0.1);
-      border: 1px solid rgba(212,168,67,0.25);
-      padding: 4px 12px;
+      border: 1px solid rgba(212,168,67,0.2);
+      padding: 5px 12px;
       border-radius: 100px;
       font-size: 12px;
       font-weight: 500;
       color: var(--gold);
+    }
+    .service-arrow {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--muted);
+      transition: all 0.3s;
+    }
+    .service-card:hover .service-arrow {
+      background: var(--red);
+      border-color: var(--red);
+      color: white;
+      transform: rotate(45deg);
     }
 
     /* ─── INDUSTRIES ─── */
@@ -1267,8 +1351,9 @@
 
       /* services */
       .services-header { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 40px; }
-      .services-grid { grid-template-columns: 1fr; gap: 0; }
-      .service-card { padding: 28px 20px; }
+      .services-grid { grid-template-columns: 1fr; gap: 16px; }
+      .services-grid .service-card:first-child { grid-column: span 1; }
+      .service-card { padding: 24px 20px; }
 
       /* industries */
       .industries-tabs { gap: 6px; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -1685,43 +1770,129 @@
     <p class="section-desc">From a fresh website to a complete AI-powered operating system for your business. We build it, integrate it, and keep it running.</p>
   </div>
 
-  <div class="services-grid reveal">
+  <div class="services-grid stagger reveal">
+
+    <!-- FEATURED: Website & App -->
     <div class="service-card">
-      <div class="service-icon">🌐</div>
-      <div class="service-name">Website & Mobile App</div>
-      <div class="service-desc">Modern, fast, and beautiful websites and apps built for Lebanese businesses. We rebuild legacy sites and make them convert.</div>
-      <span class="service-ai-tag">✦ AI Chatbot Integration</span>
+      <div class="service-card-top">
+        <div class="service-icon">🌐</div>
+        <div class="service-stat"><div class="service-stat-num">3×</div><div class="service-stat-label">More Conversions</div></div>
+      </div>
+      <div class="service-name">Website &amp; Mobile App</div>
+      <div class="service-desc">Your business deserves a digital presence that actually works. We design and build fast, modern websites and native mobile apps from scratch — or rescue your outdated legacy site and turn it into a customer-converting machine. Every pixel optimized for Lebanon's market.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Custom design tailored to your brand identity</li>
+        <li><span class="service-feat-icon">✓</span>iOS & Android mobile app development</li>
+        <li><span class="service-feat-icon">✓</span>Legacy website migration & full redesign</li>
+        <li><span class="service-feat-icon">✓</span>SEO optimization & Google ranking setup</li>
+        <li><span class="service-feat-icon">✓</span>Arabic & English bilingual support</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ Built-in AI Chatbot</span>
+        <div class="service-arrow">→</div>
+      </div>
     </div>
+
+    <!-- CRM -->
     <div class="service-card">
-      <div class="service-icon">📊</div>
+      <div class="service-card-top">
+        <div class="service-icon">📊</div>
+        <div class="service-stat"><div class="service-stat-num">41%</div><div class="service-stat-label">Less Churn</div></div>
+      </div>
       <div class="service-name">CRM Systems</div>
-      <div class="service-desc">Know your customers by name. AI-powered CRM that tracks interactions, predicts churn, and automates follow-ups.</div>
-      <span class="service-ai-tag">✦ Smart Customer Insights</span>
+      <div class="service-desc">Stop losing customers to silence. Our AI-powered CRM remembers every interaction, flags at-risk relationships, and automates follow-ups before customers walk out the door.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Full customer interaction history & profiles</li>
+        <li><span class="service-feat-icon">✓</span>AI churn prediction & retention alerts</li>
+        <li><span class="service-feat-icon">✓</span>Automated WhatsApp & email follow-ups</li>
+        <li><span class="service-feat-icon">✓</span>Sales pipeline tracking & deal management</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ Smart Customer Insights</span>
+        <div class="service-arrow">→</div>
+      </div>
     </div>
+
+    <!-- POS -->
     <div class="service-card">
-      <div class="service-icon">🏷️</div>
+      <div class="service-card-top">
+        <div class="service-icon">🏷️</div>
+        <div class="service-stat"><div class="service-stat-num">2 min</div><div class="service-stat-label">Avg Checkout</div></div>
+      </div>
       <div class="service-name">POS Systems</div>
-      <div class="service-desc">Modern point-of-sale that integrates with your inventory, accounting, and loyalty program in real time.</div>
-      <span class="service-ai-tag">✦ AI Sales Forecasting</span>
+      <div class="service-desc">Ditch the clunky cash register. Our cloud-based POS system handles orders, payments, split bills, discounts, and loyalty points — all in one tap, with live reporting you can check from your phone.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Cloud POS accessible from any device</li>
+        <li><span class="service-feat-icon">✓</span>Multi-payment: cash, card, OMT, Whish</li>
+        <li><span class="service-feat-icon">✓</span>Integrated loyalty & discount engine</li>
+        <li><span class="service-feat-icon">✓</span>Real-time sales dashboards & end-of-day reports</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ AI Sales Forecasting</span>
+        <div class="service-arrow">→</div>
+      </div>
     </div>
+
+    <!-- Inventory -->
     <div class="service-card">
-      <div class="service-icon">📦</div>
+      <div class="service-card-top">
+        <div class="service-icon">📦</div>
+        <div class="service-stat"><div class="service-stat-num">68%</div><div class="service-stat-label">Less Waste</div></div>
+      </div>
       <div class="service-name">Inventory Management</div>
-      <div class="service-desc">Never run out of stock or overorder again. AI predicts demand, auto-generates purchase orders, and tracks waste.</div>
-      <span class="service-ai-tag">✦ Predictive Restocking</span>
+      <div class="service-desc">Running out of your best-seller or drowning in dead stock? Our AI watches your inventory 24/7, predicts what you'll need, and auto-generates purchase orders before you even think about it.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Real-time stock tracking across locations</li>
+        <li><span class="service-feat-icon">✓</span>AI demand forecasting by season & trends</li>
+        <li><span class="service-feat-icon">✓</span>Automated reorder alerts & supplier orders</li>
+        <li><span class="service-feat-icon">✓</span>Expiry date tracking & waste reduction alerts</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ Predictive Restocking</span>
+        <div class="service-arrow">→</div>
+      </div>
     </div>
+
+    <!-- Financial -->
     <div class="service-card">
-      <div class="service-icon">💰</div>
+      <div class="service-card-top">
+        <div class="service-icon">💰</div>
+        <div class="service-stat"><div class="service-stat-num">8h</div><div class="service-stat-label">Saved Weekly</div></div>
+      </div>
       <div class="service-name">Financial Management</div>
-      <div class="service-desc">Real-time P&L, automated invoicing, expense categorization, and tax prep — all powered by AI and tailored for Lebanon.</div>
-      <span class="service-ai-tag">✦ AI Expense Analysis</span>
+      <div class="service-desc">No more end-of-month panic. Get a real-time view of your money — revenue, expenses, profits — with AI that categorizes every transaction, flags anomalies, and preps your reports automatically.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Live P&L, cash flow & balance sheets</li>
+        <li><span class="service-feat-icon">✓</span>Automated invoicing & payment tracking</li>
+        <li><span class="service-feat-icon">✓</span>AI expense categorization & anomaly detection</li>
+        <li><span class="service-feat-icon">✓</span>Multi-currency support (LBP, USD, EUR)</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ AI Expense Analysis</span>
+        <div class="service-arrow">→</div>
+      </div>
     </div>
+
+    <!-- AI Marketing -->
     <div class="service-card">
-      <div class="service-icon">📣</div>
+      <div class="service-card-top">
+        <div class="service-icon">📣</div>
+        <div class="service-stat"><div class="service-stat-num">5×</div><div class="service-stat-label">More Reach</div></div>
+      </div>
       <div class="service-name">AI Marketing</div>
-      <div class="service-desc">Automated social media content, WhatsApp campaigns, loyalty programs, and customer re-engagement — all on autopilot.</div>
-      <span class="service-ai-tag">✦ Auto-Content Generation</span>
+      <div class="service-desc">Marketing that runs itself. Our AI writes your social posts, designs campaigns, sends WhatsApp blasts to the right customers at the right time, and brings back people who haven't visited in a while.</div>
+      <ul class="service-features">
+        <li><span class="service-feat-icon">✓</span>Auto-generated Instagram & Facebook content</li>
+        <li><span class="service-feat-icon">✓</span>Targeted WhatsApp & SMS campaigns</li>
+        <li><span class="service-feat-icon">✓</span>AI loyalty programs & re-engagement flows</li>
+        <li><span class="service-feat-icon">✓</span>Performance analytics & ROI tracking</li>
+      </ul>
+      <div class="service-footer">
+        <span class="service-ai-tag">✦ Auto-Content Generation</span>
+        <div class="service-arrow">→</div>
+      </div>
     </div>
+
   </div>
 </section>
 
