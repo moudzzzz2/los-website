@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOS — Lebanese Operating System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── MODAL ─── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: #13131a;
+      border: 1px solid rgba(232,25,44,0.25);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 520px;
+      width: 100%;
+      position: relative;
+      transform: translateY(30px) scale(0.97);
+      transition: transform 0.3s;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.7), 0 0 80px rgba(232,25,44,0.08);
+    }
+    .modal-overlay.open .modal {
+      transform: translateY(0) scale(1);
+    }
+    .modal-close {
+      position: absolute;
+      top: 20px; right: 20px;
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 18px;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+    .modal-close:hover { background: rgba(232,25,44,0.15); color: var(--red); border-color: rgba(232,25,44,0.4); }
+    .modal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(232,25,44,0.1);
+      border: 1px solid rgba(232,25,44,0.25);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      color: #ff6b7a;
+      margin-bottom: 16px;
+    }
+    .modal-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .modal-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .form-row .form-group { margin-bottom: 0; }
+    .form-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .form-input, .form-select, .form-textarea {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      width: 100%;
+    }
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--muted); }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: rgba(232,25,44,0.5);
+      box-shadow: 0 0 0 3px rgba(232,25,44,0.1);
+    }
+    .form-select { cursor: pointer; }
+    .form-select option { background: #1a1a24; color: var(--text); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+    .form-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 30px rgba(232,25,44,0.35);
+      margin-top: 8px;
+    }
+    .form-submit:hover { background: var(--red-dark); transform: translateY(-1px); }
+    .form-submit:active { transform: translateY(0); }
+    .form-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+    .modal-success {
+      text-align: center;
+      padding: 20px 0;
+      display: none;
+    }
+    .modal-success.show { display: block; }
+    .modal-success-icon { font-size: 56px; margin-bottom: 16px; }
+    .modal-success-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .modal-success-sub { font-size: 15px; color: var(--muted); }
+    .form-body {}
+  </style>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #E8192C;
+      --red-dark: #B5111F;
+      --red-glow: rgba(232, 25, 44, 0.35);
+      --bg: #060608;
+      --bg2: #0d0d12;
+      --bg3: #13131a;
+      --surface: #1a1a24;
+      --surface2: #22222e;
+      --border: rgba(255,255,255,0.07);
+      --text: #f0f0f5;
+      --muted: #8a8a9a;
+      --white: #ffffff;
+      --gold: #d4a843;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ─── NOISE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--red); border-radius: 2px; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 20px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(6,6,8,0.7);
+      border-bottom: 1px solid var(--border);
+      transition: padding 0.3s;
+    }
+    nav.scrolled { padding: 14px 60px; }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-logo-mark {
+      width: 36px; height: 36px;
+      background: var(--red);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: white;
+      letter-spacing: 0.5px;
+      box-shadow: 0 0 20px var(--red-glow);
+    }
+    .nav-logo-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 17px;
+      color: var(--white);
+    }
+    .nav-logo-text span { color: var(--red); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+
+    .nav-cta {
+      background: var(--red);
+      color: white !important;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      transition: background 0.2s, transform 0.2s !important;
+      box-shadow: 0 0 24px var(--red-glow);
+    }
+    .nav-cta:hover { background: var(--red-dark) !important; transform: translateY(-1px); }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      animation: pulse 6s ease-in-out infinite;
+    }
+    .hero-orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(232,25,44,0.18) 0%, transparent 70%);
+      top: -100px; left: 50%;
+      transform: translateX(-50%);
+    }
+    .hero-orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(212,168,67,0.08) 0%, transparent 70%);
+      bottom: 0; right: -100px;
+      animation-delay: -3s;
+    }
+    .hero-orb-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(232,25,44,0.1) 0%, transparent 70%);
+      bottom: 100px; left: -50px;
+      animation-delay: -1.5s;
+    }
+
+    /* Animated grid */
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 100%);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+      50% { transform: translateX(-50%) scale(1.1); opacity: 0.8; }
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(232,25,44,0.1);
+      border: 1px solid rgba(232,25,44,0.3);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #ff6b7a;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 0.8s ease both;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      background: var(--red);
+      border-radius: 50%;
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(52px, 10vw, 110px);
+      font-weight: 700;
+      line-height: 0.95;
+      letter-spacing: -3px;
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+    .hero-title-los {
+      display: block;
+      background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-title-sub {
+      display: block;
+      font-size: clamp(18px, 3.5vw, 38px);
+      font-weight: 400;
+      letter-spacing: -0.5px;
+      color: var(--red);
+      margin-top: 8px;
+      -webkit-text-fill-color: var(--red);
+    }
+
+    .hero-desc {
+      max-width: 600px;
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--muted);
+      margin: 28px auto 44px;
+      line-height: 1.7;
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .btn-primary {
+      background: var(--red);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 0 40px rgba(232,25,44,0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 8px 40px rgba(232,25,44,0.5); }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      padding: 14px 32px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary:hover { background: var(--surface2); transform: translateY(-2px); border-color: rgba(255,255,255,0.15); }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      z-index: 1;
+      animation: fadeUp 1s 0.6s ease both;
+    }
+    .hero-scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--red), transparent);
+      animation: scrollLine 2s ease-in-out infinite;
+    }
+    @keyframes scrollLine { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:0.4;transform:scaleY(0.5)} }
+
+    /* ─── STATS STRIP ─── */
+    .stats {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      padding: 40px 60px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      text-align: center;
+      gap: 20px;
+    }
+    .stat-divider {
+      border-right: 1px solid var(--border);
+    }
+    .stat-divider:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1;
+    }
+    .stat-num span { color: var(--red); }
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ─── SECTIONS ─── */
+    section { padding: 100px 60px; }
+
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--red);
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      color: var(--white);
+      margin-bottom: 20px;
+    }
+    .section-desc {
+      font-size: 17px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 540px;
+    }
+
+    /* ─── SERVICES ─── */
+    #services { background: var(--bg2); }
+
+    .services-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 64px;
+      gap: 40px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .service-card {
+      background: var(--bg2);
+      padding: 40px 36px;
+      transition: background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(232,25,44,0.05) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .service-card:hover { background: var(--bg3); }
+    .service-card:hover::before { opacity: 1; }
+
+    .service-icon {
+      width: 52px; height: 52px;
+      background: rgba(232,25,44,0.12);
+      border: 1px solid rgba(232,25,44,0.2);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 24px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .service-card:hover .service-icon {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px var(--red-glow);
+    }
+    .service-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 12px;
+    }
+    .service-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+    .service-ai-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(212,168,67,0.1);
+      border: 1px solid rgba(212,168,67,0.25);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gold);
+    }
+
+    /* ─── INDUSTRIES ─── */
+    #industries { background: var(--bg); }
+
+    .industries-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .industries-header .section-desc { margin: 0 auto; }
+
+    .industries-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+    .industry-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .industry-tab:hover {
+      border-color: rgba(232,25,44,0.4);
+      color: var(--text);
+    }
+    .industry-tab.active {
+      background: var(--red);
+      border-color: var(--red);
+      color: white;
+      box-shadow: 0 0 20px var(--red-glow);
+    }
+
+    .industry-panel {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .industry-panel.active { display: grid; }
+
+    .industry-content {}
+    .industry-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+    .industry-desc {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .ai-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .ai-feature {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+    .ai-feature:hover { border-color: rgba(232,25,44,0.3); }
+    .ai-feature-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ai-feature-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; }
+    .ai-feature-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .industry-visual {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .industry-visual::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(232,25,44,0.15) 0%, transparent 70%);
+    }
+    .industry-visual-emoji {
+      font-size: 80px;
+      display: block;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 20px rgba(232,25,44,0.3));
+    }
+    .industry-visual-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .industry-visual-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .metric-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .metric {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .metric-label {
+      font-size: 13px;
+      color: var(--muted);
+      width: 120px;
+      flex-shrink: 0;
+    }
+    .metric-bar-wrap {
+      flex: 1;
+      height: 6px;
+      background: var(--bg);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .metric-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--red), #ff6b7a);
+      border-radius: 3px;
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+      width: 0;
+    }
+    .metric-val {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      width: 36px;
+      text-align: right;
+    }
+
+    /* ─── HOW IT WORKS ─── */
+    #how { background: var(--bg2); }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin-top: 64px;
+      position: relative;
+    }
+    .how-grid::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 10%;
+      width: 80%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--red), transparent);
+    }
+
+    .how-step {
+      text-align: center;
+      position: relative;
+    }
+    .how-num {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--red);
+      margin: 0 auto 24px;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s;
+    }
+    .how-step:hover .how-num {
+      background: var(--red);
+      color: white;
+      box-shadow: 0 0 30px var(--red-glow);
+    }
+    .how-step-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 10px;
+    }
+    .how-step-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ─── AI SECTION ─── */
+    #ai { background: var(--bg); overflow: hidden; position: relative; }
+
+    .ai-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(232,25,44,0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .ai-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      position: relative;
+    }
+
+    .ai-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .ai-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+      transition: all 0.3s;
+      cursor: default;
+    }
+    .ai-card:hover {
+      border-color: rgba(232,25,44,0.4);
+      transform: translateX(6px);
+      box-shadow: -4px 0 0 var(--red), 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .ai-card-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ai-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--white);
+      margin-bottom: 6px;
+    }
+    .ai-card-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ─── PRICING ─── */
+    #pricing { background: var(--bg2); }
+
+    .pricing-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .pricing-header .section-desc { margin: 0 auto; }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .pricing-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .pricing-card.featured {
+      background: linear-gradient(145deg, #1e0810 0%, #1a0a14 50%, #160c18 100%);
+      border-color: rgba(232,25,44,0.4);
+      box-shadow: 0 0 60px rgba(232,25,44,0.1);
+    }
+    .pricing-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--red);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 4px 16px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+    .pricing-plan {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .pricing-price {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .pricing-price sup { font-size: 22px; color: var(--red); }
+    .pricing-period {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+    .pricing-divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 28px;
+    }
+    .pricing-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .pricing-check {
+      width: 18px; height: 18px;
+      background: rgba(232,25,44,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 10px;
+      color: var(--red);
+    }
+
+    .btn-pricing {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      display: block;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-pricing-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-pricing-outline:hover { background: var(--surface2); border-color: rgba(255,255,255,0.2); }
+    .btn-pricing-solid {
+      background: var(--red);
+      color: white;
+      box-shadow: 0 0 30px var(--red-glow);
+    }
+    .btn-pricing-solid:hover { background: var(--red-dark); transform: translateY(-1px); }
+
+    /* ─── TESTIMONIALS ─── */
+    #testimonials { background: var(--bg); }
+
+    .testimonials-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .testimonial-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .testimonial-card:hover { transform: translateY(-4px); border-color: rgba(232,25,44,0.25); }
+    .testimonial-stars {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .star { color: var(--gold); font-size: 16px; }
+    .testimonial-quote {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .testimonial-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--red), #ff6b7a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .testimonial-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--white);
+    }
+    .testimonial-role {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ─── CTA ─── */
+    #contact {
+      background: var(--bg);
+      padding: 100px 60px;
+    }
+    .cta-box {
+      background: linear-gradient(135deg, #120508 0%, #0d0308 50%, #120508 100%);
+      border: 1px solid rgba(232,25,44,0.3);
+      border-radius: 24px;
+      padding: 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 100px rgba(232,25,44,0.08);
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(232,25,44,0.12) 0%, transparent 70%);
+    }
+    .cta-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .cta-desc {
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 40px;
+      position: relative;
+    }
+    .cta-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 60px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 60px;
+      margin-bottom: 48px;
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      text-decoration: none;
+    }
+    .footer-tagline {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 260px;
+    }
+    .footer-social {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .footer-social-link {
+      width: 36px; height: 36px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .footer-social-link:hover { background: var(--red); border-color: var(--red); }
+    .footer-col-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--white);
+      margin-bottom: 20px;
+    }
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .footer-links a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--red); }
+    .footer-bottom {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-copy {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .footer-copy span { color: var(--red); }
+    .footer-cedar {
+      font-size: 20px;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      section { padding: 70px 24px; }
+      .stats { grid-template-columns: repeat(2, 1fr); padding: 30px 24px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .services-header { flex-direction: column; align-items: flex-start; }
+      .industry-panel.active { grid-template-columns: 1fr; }
+      .how-grid { grid-template-columns: 1fr 1fr; }
+      .how-grid::before { display: none; }
+      .ai-layout { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .cta-box { padding: 48px 28px; }
+      footer { padding: 40px 24px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── CONTACT MODAL ─── -->
+<div class="modal-overlay" id="contactModal">
+  <div class="modal">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="form-body" id="formBody">
+      <div class="modal-badge">🚀 Free Consultation</div>
+      <h2 class="modal-title">Let's upgrade your business</h2>
+      <p class="modal-sub">Fill in your details and we'll reach out within 24 hours. No commitment, no cost.</p>
+      <form id="contactForm" action="https://formspree.io/f/xpwzgkrv" method="POST">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input class="form-input" type="text" name="first_name" placeholder="Karim" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input class="form-input" type="text" name="last_name" placeholder="Nassar" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">WhatsApp / Phone</label>
+          <input class="form-input" type="tel" name="phone" placeholder="+961 70 000 000" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" name="email" placeholder="you@business.lb" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Industry</label>
+          <select class="form-select" name="industry" required>
+            <option value="" disabled selected>Select your business type</option>
+            <option>🍽️ Restaurant / Food</option>
+            <option>☕ Coffee Shop / Café</option>
+            <option>🔧 Auto Mechanic / Workshop</option>
+            <option>🛍️ Retail / Boutique</option>
+            <option>💇 Salon / Beauty</option>
+            <option>💊 Pharmacy / Health</option>
+            <option>🏋️ Gym / Fitness</option>
+            <option>🏗️ Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">What's your biggest challenge? <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+          <textarea class="form-textarea" name="message" placeholder="e.g. We have no online presence, inventory is a mess, we need a website..."></textarea>
+        </div>
+        <button type="submit" class="form-submit">Book Free Consultation →</button>
+        <p class="form-note">🔒 Your info is private. No spam, ever.</p>
+      </form>
+    </div>
+    <div class="modal-success" id="formSuccess">
+      <div class="modal-success-icon">🎉</div>
+      <div class="modal-success-title">We'll be in touch!</div>
+      <p class="modal-success-sub">Expect a WhatsApp message from us within 24 hours. Your transformation starts now.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── NAV ─── -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">LOS</div>
+    <span class="nav-logo-text">Lebanese <span>OS</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#industries">Industries</a></li>
+    <li><a href="#how">Process</a></li>
+    <li><a href="#ai">AI Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#" onclick="openModal();return false;" class="nav-cta">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero" id="home">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+  </div>
+
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    Now serving Lebanese businesses — powered by AI
+  </div>
+
+  <h1 class="hero-title">
+    <span class="hero-title-los">LOS</span>
+    <span class="hero-title-sub">Lebanese Operating System</span>
+  </h1>
+
+  <p class="hero-desc">
+    We bring enterprise-grade AI to local Lebanese businesses — from restaurants and coffee shops to mechanics and retail stores. Your business, upgraded.
+  </p>
+
+  <div class="hero-actions">
+    <button onclick="openModal()" class="btn-primary">
+      <span>Start Your Transformation</span>
+      <span>→</span>
+    </button>
+    <a href="#industries" class="btn-secondary">
+      <span>See Industries</span>
+      <span>↓</span>
+    </a>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ─── STATS ─── -->
+<div class="stats reveal">
+  <div class="stat-divider">
+    <div class="stat-num"><span id="c1">0</span>+</div>
+    <div class="stat-label">Businesses Upgraded</div>
+  </div>
+  <div class="stat-divider">
+    <div class="stat-num"><span id="c2">0</span>%</div>
+    <div class="stat-label">Avg. Revenue Increase</div>
+  </div>
+  <div class="stat-divider">
+    <div class="stat-num"><span id="c3">0</span>h</div>
+    <div class="stat-label">Saved Per Week</div>
+  </div>
+  <div class="stat-divider">
+    <div class="stat-num"><span id="c4">0</span>+</div>
+    <div class="stat-label">AI Integrations Deployed</div>
+  </div>
+</div>
+
+<!-- ─── SERVICES ─── -->
+<section id="services">
+  <div class="services-header reveal">
+    <div>
+      <span class="section-label">What We Do</span>
+      <h2 class="section-title">Everything your<br>business needs</h2>
+    </div>
+    <p class="section-desc">From a fresh website to a complete AI-powered operating system for your business. We build it, integrate it, and keep it running.</p>
+  </div>
+
+  <div class="services-grid reveal">
+    <div class="service-card">
+      <div class="service-icon">🌐</div>
+      <div class="service-name">Website & Mobile App</div>
+      <div class="service-desc">Modern, fast, and beautiful websites and apps built for Lebanese businesses. We rebuild legacy sites and make them convert.</div>
+      <span class="service-ai-tag">✦ AI Chatbot Integration</span>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">📊</div>
+      <div class="service-name">CRM Systems</div>
+      <div class="service-desc">Know your customers by name. AI-powered CRM that tracks interactions, predicts churn, and automates follow-ups.</div>
+      <span class="service-ai-tag">✦ Smart Customer Insights</span>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🏷️</div>
+      <div class="service-name">POS Systems</div>
+      <div class="service-desc">Modern point-of-sale that integrates with your inventory, accounting, and loyalty program in real time.</div>
+      <span class="service-ai-tag">✦ AI Sales Forecasting</span>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">📦</div>
+      <div class="service-name">Inventory Management</div>
+      <div class="service-desc">Never run out of stock or overorder again. AI predicts demand, auto-generates purchase orders, and tracks waste.</div>
+      <span class="service-ai-tag">✦ Predictive Restocking</span>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">💰</div>
+      <div class="service-name">Financial Management</div>
+      <div class="service-desc">Real-time P&L, automated invoicing, expense categorization, and tax prep — all powered by AI and tailored for Lebanon.</div>
+      <span class="service-ai-tag">✦ AI Expense Analysis</span>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">📣</div>
+      <div class="service-name">AI Marketing</div>
+      <div class="service-desc">Automated social media content, WhatsApp campaigns, loyalty programs, and customer re-engagement — all on autopilot.</div>
+      <span class="service-ai-tag">✦ Auto-Content Generation</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── INDUSTRIES ─── -->
+<section id="industries">
+  <div class="industries-header reveal">
+    <span class="section-label">Industries</span>
+    <h2 class="section-title">Built for your<br>type of business</h2>
+    <p class="section-desc">Every industry has unique needs. We've built specialized AI solutions for each one.</p>
+  </div>
+
+  <div class="industries-tabs reveal">
+    <button class="industry-tab active" data-tab="restaurant">🍽️ Restaurants</button>
+    <button class="industry-tab" data-tab="cafe">☕ Coffee Shops</button>
+    <button class="industry-tab" data-tab="mechanic">🔧 Mechanics</button>
+    <button class="industry-tab" data-tab="retail">🛍️ Retail</button>
+    <button class="industry-tab" data-tab="salon">💇 Salons</button>
+    <button class="industry-tab" data-tab="pharmacy">💊 Pharmacies</button>
+    <button class="industry-tab" data-tab="gym">🏋️ Gyms</button>
+  </div>
+
+  <!-- Restaurant -->
+  <div class="industry-panel active" id="tab-restaurant">
+    <div class="industry-content">
+      <h3 class="industry-title">Restaurants &amp;<br>Food Businesses</h3>
+      <p class="industry-desc">AI-powered tools that fill tables, reduce waste, and keep your kitchen running at full speed — even on Beirut's busiest nights.</p>
+      <div class="ai-features">
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Smart Reservations</div>
+          <div class="ai-feature-desc">AI manages bookings, no-shows, and waitlists automatically</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Menu AI</div>
+          <div class="ai-feature-desc">Recommends dishes based on weather, season, and customer history</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Food Waste Tracker</div>
+          <div class="ai-feature-desc">Predicts prep quantities to minimize daily waste and costs</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>WhatsApp Orders</div>
+          <div class="ai-feature-desc">Customers order directly via WhatsApp with AI handling it all</div>
+        </div>
+      </div>
+    </div>
+    <div class="industry-visual">
+      <span class="industry-visual-emoji">🍽️</span>
+      <div class="industry-visual-title">Restaurant Dashboard</div>
+      <div class="industry-visual-sub">Live metrics for your kitchen</div>
+      <div class="metric-row">
+        <div class="metric">
+          <div class="metric-label">Table Occupancy</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="87"></div></div>
+          <div class="metric-val">87%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Waste Reduced</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="64"></div></div>
+          <div class="metric-val">64%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Repeat Customers</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="72"></div></div>
+          <div class="metric-val">72%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cafe -->
+  <div class="industry-panel" id="tab-cafe">
+    <div class="industry-content">
+      <h3 class="industry-title">Coffee Shops &amp;<br>Cafés</h3>
+      <p class="industry-desc">From loyalty programs to AI barista recommendations, turn your café into a neighborhood institution customers can't resist.</p>
+      <div class="ai-features">
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Smart Loyalty</div>
+          <div class="ai-feature-desc">AI-driven loyalty points that auto-reward your best customers</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Morning Prep AI</div>
+          <div class="ai-feature-desc">Predicts daily volume so you prep exactly what's needed</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Upsell Engine</div>
+          <div class="ai-feature-desc">Suggests add-ons at checkout — increases avg order by 23%</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Social Auto-Post</div>
+          <div class="ai-feature-desc">AI generates and schedules daily Instagram content for you</div>
+        </div>
+      </div>
+    </div>
+    <div class="industry-visual">
+      <span class="industry-visual-emoji">☕</span>
+      <div class="industry-visual-title">Café Dashboard</div>
+      <div class="industry-visual-sub">Your morning intelligence</div>
+      <div class="metric-row">
+        <div class="metric">
+          <div class="metric-label">Loyalty Members</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="78"></div></div>
+          <div class="metric-val">78%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Upsell Rate</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="55"></div></div>
+          <div class="metric-val">55%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Avg. Order Value</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="92"></div></div>
+          <div class="metric-val">+$4</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mechanic -->
+  <div class="industry-panel" id="tab-mechanic">
+    <div class="industry-content">
+      <h3 class="industry-title">Auto Mechanics &amp;<br>Workshops</h3>
+      <p class="industry-desc">Digitize your garage. AI tracks repair history, auto-quotes jobs, and messages customers when their car is ready.</p>
+      <div class="ai-features">
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Digital Job Cards</div>
+          <div class="ai-feature-desc">Replace paper with digital cards linked to each car's history</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Auto-Quoting AI</div>
+          <div class="ai-feature-desc">AI generates repair quotes in seconds from diagnosis notes</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Reminder System</div>
+          <div class="ai-feature-desc">WhatsApp reminders for oil changes, inspections, renewals</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Parts Inventory</div>
+          <div class="ai-feature-desc">AI tracks parts, flags low stock, and suggests bulk orders</div>
+        </div>
+      </div>
+    </div>
+    <div class="industry-visual">
+      <span class="industry-visual-emoji">🔧</span>
+      <div class="industry-visual-title">Workshop Dashboard</div>
+      <div class="industry-visual-sub">Your garage, digitized</div>
+      <div class="metric-row">
+        <div class="metric">
+          <div class="metric-label">Jobs This Week</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="82"></div></div>
+          <div class="metric-val">82%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Return Rate</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="91"></div></div>
+          <div class="metric-val">91%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Quote Accuracy</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="96"></div></div>
+          <div class="metric-val">96%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Retail -->
+  <div class="industry-panel" id="tab-retail">
+    <div class="industry-content">
+      <h3 class="industry-title">Retail &amp;<br>Boutiques</h3>
+      <p class="industry-desc">AI-driven inventory, dynamic pricing, and personalized shopping experiences that keep customers coming back.</p>
+      <div class="ai-features">
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Smart Inventory</div>
+          <div class="ai-feature-desc">AI tracks stock in real time and reorders before you run out</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Product Recommender</div>
+          <div class="ai-feature-desc">Suggests products to shoppers based on browsing & purchase history</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Demand Forecasting</div>
+          <div class="ai-feature-desc">Know what will sell next season before you order</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Online Store</div>
+          <div class="ai-feature-desc">Sync your physical store with an AI-powered online shop</div>
+        </div>
+      </div>
+    </div>
+    <div class="industry-visual">
+      <span class="industry-visual-emoji">🛍️</span>
+      <div class="industry-visual-title">Retail Dashboard</div>
+      <div class="industry-visual-sub">Your store intelligence</div>
+      <div class="metric-row">
+        <div class="metric">
+          <div class="metric-label">Stock Accuracy</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="98"></div></div>
+          <div class="metric-val">98%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Sell-Through Rate</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="74"></div></div>
+          <div class="metric-val">74%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Online Revenue</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="60"></div></div>
+          <div class="metric-val">+60%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Salon -->
+  <div class="industry-panel" id="tab-salon">
+    <div class="industry-content">
+      <h3 class="industry-title">Salons &amp;<br>Beauty Studios</h3>
+      <p class="industry-desc">Fill your calendar, reduce no-shows, and build loyalty with automated booking, reminders, and personalized client profiles.</p>
+      <div class="ai-features">
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Smart Booking</div>
+          <div class="ai-feature-desc">24/7 online booking with AI-optimized stylist scheduling</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>No-Show Prevention</div>
+          <div class="ai-feature-desc">Automated WhatsApp reminders cut no-shows by 80%</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Client Profiles</div>
+          <div class="ai-feature-desc">AI tracks preferences, allergies, and service history per client</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Revenue Optimizer</div>
+          <div class="ai-feature-desc">AI suggests upsells and fills last-minute gaps in the schedule</div>
+        </div>
+      </div>
+    </div>
+    <div class="industry-visual">
+      <span class="industry-visual-emoji">💇</span>
+      <div class="industry-visual-title">Salon Dashboard</div>
+      <div class="industry-visual-sub">Your chair, always filled</div>
+      <div class="metric-row">
+        <div class="metric">
+          <div class="metric-label">Bookings Filled</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="93"></div></div>
+          <div class="metric-val">93%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">No-Show Reduction</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="80"></div></div>
+          <div class="metric-val">80%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Client Retention</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="86"></div></div>
+          <div class="metric-val">86%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pharmacy -->
+  <div class="industry-panel" id="tab-pharmacy">
+    <div class="industry-content">
+      <h3 class="industry-title">Pharmacies &amp;<br>Health Stores</h3>
+      <p class="industry-desc">AI-driven stock management, prescription tracking, and patient reminders that keep your pharmacy running efficiently.</p>
+      <div class="ai-features">
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Expiry Tracker</div>
+          <div class="ai-feature-desc">AI flags medications nearing expiry and suggests promotions</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Refill Reminders</div>
+          <div class="ai-feature-desc">Automated WhatsApp reminders when prescriptions are due</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Drug Interaction AI</div>
+          <div class="ai-feature-desc">Flags potential interactions to support pharmacist decisions</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Smart Ordering</div>
+          <div class="ai-feature-desc">Predicts demand based on season, illness trends, and history</div>
+        </div>
+      </div>
+    </div>
+    <div class="industry-visual">
+      <span class="industry-visual-emoji">💊</span>
+      <div class="industry-visual-title">Pharmacy Dashboard</div>
+      <div class="industry-visual-sub">Your dispensary, smarter</div>
+      <div class="metric-row">
+        <div class="metric">
+          <div class="metric-label">Stock Efficiency</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="94"></div></div>
+          <div class="metric-val">94%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Refill Compliance</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="68"></div></div>
+          <div class="metric-val">68%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Waste Reduction</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="71"></div></div>
+          <div class="metric-val">71%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gym -->
+  <div class="industry-panel" id="tab-gym">
+    <div class="industry-content">
+      <h3 class="industry-title">Gyms &amp;<br>Fitness Centers</h3>
+      <p class="industry-desc">AI-powered member management, class scheduling, and churn prediction that keeps your gym packed year-round.</p>
+      <div class="ai-features">
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Churn Prediction</div>
+          <div class="ai-feature-desc">AI flags at-risk members before they cancel — re-engage them</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Class Optimizer</div>
+          <div class="ai-feature-desc">AI schedules classes based on peak times and instructor availability</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Member App</div>
+          <div class="ai-feature-desc">Branded app with booking, progress tracking, and AI workout plans</div>
+        </div>
+        <div class="ai-feature">
+          <div class="ai-feature-title"><span class="ai-feature-dot"></span>Auto Billing</div>
+          <div class="ai-feature-desc">Handles recurring payments, failed charges, and plan upgrades</div>
+        </div>
+      </div>
+    </div>
+    <div class="industry-visual">
+      <span class="industry-visual-emoji">🏋️</span>
+      <div class="industry-visual-title">Gym Dashboard</div>
+      <div class="industry-visual-sub">Your members, engaged</div>
+      <div class="metric-row">
+        <div class="metric">
+          <div class="metric-label">Member Retention</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="88"></div></div>
+          <div class="metric-val">88%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Class Occupancy</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="76"></div></div>
+          <div class="metric-val">76%</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Churn Prevented</div>
+          <div class="metric-bar-wrap"><div class="metric-bar" data-width="62"></div></div>
+          <div class="metric-val">62%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section id="how">
+  <div style="text-align:center; margin-bottom:0;" class="reveal">
+    <span class="section-label">Our Process</span>
+    <h2 class="section-title">From zero to AI-powered<br>in 4 steps</h2>
+  </div>
+  <div class="how-grid reveal">
+    <div class="how-step">
+      <div class="how-num">01</div>
+      <div class="how-step-title">Discovery Call</div>
+      <div class="how-step-desc">We learn your business, your pain points, and your goals. Free 30-minute session, no strings attached.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">02</div>
+      <div class="how-step-title">Custom Blueprint</div>
+      <div class="how-step-desc">We design a tailored tech stack and AI integration plan specific to your industry and budget.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">03</div>
+      <div class="how-step-title">Build & Integrate</div>
+      <div class="how-step-desc">Our team builds everything, migrates your data, and trains your staff. Zero downtime guaranteed.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">04</div>
+      <div class="how-step-title">Grow & Scale</div>
+      <div class="how-step-desc">Ongoing support, AI model refinement, and monthly reports showing exactly how we're boosting your revenue.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── AI SECTION ─── -->
+<section id="ai">
+  <div class="ai-bg"></div>
+  <div class="ai-layout">
+    <div class="reveal">
+      <span class="section-label">AI Capabilities</span>
+      <h2 class="section-title">The AI brain<br>behind your business</h2>
+      <p class="section-desc" style="margin-bottom:0">We don't just bolt AI on — we weave it into every part of how your business operates.</p>
+    </div>
+    <div class="ai-cards reveal">
+      <div class="ai-card">
+        <div class="ai-card-icon">🤖</div>
+        <div>
+          <div class="ai-card-title">AI Customer Assistant</div>
+          <div class="ai-card-desc">24/7 WhatsApp and web chatbot that answers questions, takes orders, and books appointments — in Arabic and English.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-icon">📈</div>
+        <div>
+          <div class="ai-card-title">Revenue Intelligence</div>
+          <div class="ai-card-desc">AI analyzes your sales patterns and surfaces hidden opportunities — slow hours, underperforming products, pricing gaps.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-icon">✍️</div>
+        <div>
+          <div class="ai-card-title">AI Content Engine</div>
+          <div class="ai-card-desc">Generates social media posts, promotions, and menu descriptions tailored to your brand voice — in seconds.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-card-icon">🔮</div>
+        <div>
+          <div class="ai-card-title">Predictive Analytics</div>
+          <div class="ai-card-desc">Know tomorrow's sales today. AI forecasts demand so you can staff correctly and prep exactly what's needed.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PRICING ─── -->
+<section id="pricing">
+  <div class="pricing-header reveal">
+    <span class="section-label">Pricing</span>
+    <h2 class="section-title">Simple, transparent pricing</h2>
+    <p class="section-desc">No hidden fees. No long-term lock-in. Cancel anytime.</p>
+  </div>
+  <div class="pricing-grid reveal">
+    <div class="pricing-card">
+      <div class="pricing-plan">Starter</div>
+      <div class="pricing-price"><sup>$</sup>199</div>
+      <div class="pricing-period">/ month</div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-features">
+        <li><span class="pricing-check">✓</span>Modern website rebuild</li>
+        <li><span class="pricing-check">✓</span>Basic POS system</li>
+        <li><span class="pricing-check">✓</span>AI chatbot (WhatsApp)</li>
+        <li><span class="pricing-check">✓</span>Monthly analytics report</li>
+        <li><span class="pricing-check">✓</span>Email support</li>
+      </ul>
+      <button class="btn-pricing btn-pricing-outline" onclick="openModal('Starter')">Get Started</button>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Most Popular</div>
+      <div class="pricing-plan">Growth</div>
+      <div class="pricing-price"><sup>$</sup>499</div>
+      <div class="pricing-period">/ month</div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-features">
+        <li><span class="pricing-check">✓</span>Everything in Starter</li>
+        <li><span class="pricing-check">✓</span>Full CRM system</li>
+        <li><span class="pricing-check">✓</span>Inventory management</li>
+        <li><span class="pricing-check">✓</span>AI revenue intelligence</li>
+        <li><span class="pricing-check">✓</span>Mobile app (iOS & Android)</li>
+        <li><span class="pricing-check">✓</span>Priority support</li>
+      </ul>
+      <button class="btn-pricing btn-pricing-solid" onclick="openModal('Growth')">Get Started</button>
+    </div>
+
+    <div class="pricing-card">
+      <div class="pricing-plan">Enterprise</div>
+      <div class="pricing-price">Custom</div>
+      <div class="pricing-period">tailored to you</div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-features">
+        <li><span class="pricing-check">✓</span>Everything in Growth</li>
+        <li><span class="pricing-check">✓</span>Multi-branch support</li>
+        <li><span class="pricing-check">✓</span>Custom AI development</li>
+        <li><span class="pricing-check">✓</span>Full financial management</li>
+        <li><span class="pricing-check">✓</span>Dedicated account manager</li>
+        <li><span class="pricing-check">✓</span>24/7 phone support</li>
+      </ul>
+      <button class="btn-pricing btn-pricing-outline" onclick="openModal('Enterprise')">Contact Us</button>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TESTIMONIALS ─── -->
+<section id="testimonials">
+  <div class="testimonials-header reveal">
+    <span class="section-label">Testimonials</span>
+    <h2 class="section-title">Trusted by Lebanese businesses</h2>
+  </div>
+  <div class="testimonials-grid reveal">
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <p class="testimonial-quote">"LOS transformed my restaurant. The AI chatbot handles all our WhatsApp orders and the waste tracking alone saved us $800 a month."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">👨‍🍳</div>
+        <div>
+          <div class="testimonial-name">Karim Nassar</div>
+          <div class="testimonial-role">Owner, Tibne Restaurant — Beirut</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <p class="testimonial-quote">"Our café was stuck in 2010. LOS built us a new website, launched our loyalty app, and now 60% of our revenue comes from repeat customers."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">☕</div>
+        <div>
+          <div class="testimonial-name">Lara Khoury</div>
+          <div class="testimonial-role">Co-Founder, Blend Café — Gemmayzeh</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <p class="testimonial-quote">"Running 3 garages was chaos. LOS gave us one dashboard for everything — parts, jobs, invoices. I finally know what's happening across all branches."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">🔧</div>
+        <div>
+          <div class="testimonial-name">Fadi Daou</div>
+          <div class="testimonial-role">CEO, Daou Auto Group — Jounieh</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CTA ─── -->
+<section id="contact">
+  <div class="cta-box reveal">
+    <h2 class="cta-title">Ready to upgrade<br>your business?</h2>
+    <p class="cta-desc">Join Lebanese businesses already running smarter with LOS. First consultation is free.</p>
+    <div class="cta-actions">
+      <button onclick="openModal()" class="btn-primary">Book Free Consultation →</button>
+      <a href="https://wa.me/96170000000" target="_blank" class="btn-secondary">💬 WhatsApp Us</a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <a href="#" class="footer-logo">
+        <div class="nav-logo-mark">LOS</div>
+        <span class="nav-logo-text">Lebanese <span>OS</span></span>
+      </a>
+      <p class="footer-tagline">Bringing AI-powered operations to every Lebanese business — one industry at a time.</p>
+      <div class="footer-social">
+        <a class="footer-social-link" href="#">📘</a>
+        <a class="footer-social-link" href="#">📸</a>
+        <a class="footer-social-link" href="#">💼</a>
+        <a class="footer-social-link" href="#">💬</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Services</div>
+      <ul class="footer-links">
+        <li><a href="#">Website & Apps</a></li>
+        <li><a href="#">CRM Systems</a></li>
+        <li><a href="#">POS Systems</a></li>
+        <li><a href="#">Inventory</a></li>
+        <li><a href="#">Financial Tools</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Industries</div>
+      <ul class="footer-links">
+        <li><a href="#">Restaurants</a></li>
+        <li><a href="#">Coffee Shops</a></li>
+        <li><a href="#">Mechanics</a></li>
+        <li><a href="#">Retail</a></li>
+        <li><a href="#">Salons</a></li>
+        <li><a href="#">Pharmacies</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="#">About LOS</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 <span>LOS</span> — Lebanese Operating System. Built with ❤️ in Lebanon.</div>
+    <div class="footer-cedar">🌲</div>
+  </div>
+</footer>
+
+<script>
+  // ─── MODAL ───
+  const modal = document.getElementById('contactModal');
+  const modalClose = document.getElementById('modalClose');
+  const contactForm = document.getElementById('contactForm');
+  const formBody = document.getElementById('formBody');
+  const formSuccess = document.getElementById('formSuccess');
+
+  function openModal(plan) {
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    formBody.style.display = 'block';
+    formSuccess.classList.remove('show');
+    if (plan) {
+      const note = contactForm.querySelector('textarea');
+      if (note && !note.value) note.placeholder = `Interested in the ${plan} plan...`;
+    }
+  }
+
+  modalClose.addEventListener('click', () => {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+
+  contactForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = contactForm.querySelector('.form-submit');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    try {
+      const res = await fetch(contactForm.action, {
+        method: 'POST',
+        body: new FormData(contactForm),
+        headers: { Accept: 'application/json' }
+      });
+      if (res.ok) {
+        formBody.style.display = 'none';
+        formSuccess.classList.add('show');
+      } else {
+        btn.textContent = 'Something went wrong — try again';
+        btn.disabled = false;
+      }
+    } catch {
+      btn.textContent = 'Something went wrong — try again';
+      btn.disabled = false;
+    }
+  });
+
+  // ─── NAV SCROLL ───
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // ─── REVEAL ON SCROLL ───
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        // Animate metric bars when visible
+        entry.target.querySelectorAll('.metric-bar').forEach(bar => {
+          bar.style.width = bar.dataset.width + '%';
+        });
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  reveals.forEach(el => observer.observe(el));
+
+  // ─── COUNTER ANIMATION ───
+  function animateCounter(id, target, suffix) {
+    const el = document.getElementById(id);
+    let current = 0;
+    const step = target / 60;
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = Math.round(current);
+      if (current >= target) clearInterval(timer);
+    }, 20);
+  }
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateCounter('c1', 150);
+        animateCounter('c2', 34);
+        animateCounter('c3', 18);
+        animateCounter('c4', 80);
+        statsObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.5 });
+  statsObserver.observe(document.querySelector('.stats'));
+
+  // ─── INDUSTRY TABS ───
+  const tabs = document.querySelectorAll('.industry-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.industry-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      const panel = document.getElementById('tab-' + tab.dataset.tab);
+      panel.classList.add('active');
+      // Animate metric bars for new panel
+      panel.querySelectorAll('.metric-bar').forEach(bar => {
+        bar.style.width = '0';
+        setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 50);
+      });
+    });
+  });
+
+  // ─── INIT METRIC BARS FOR VISIBLE PANEL ───
+  document.querySelectorAll('.industry-panel.active .metric-bar').forEach(bar => {
+    setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 500);
+  });
+</script>
+</body>
+</html>
