@@ -540,64 +540,24 @@
       gap: 40px;
     }
 
-    /* ─── CAROUSEL ─── */
-    .carousel-wrap {
-      position: relative;
-    }
-    .carousel-outer {
+    /* ─── SCROLL TRACK ─── */
+    .scroll-track-wrap {
       overflow: hidden;
       margin: 0 -60px;
-      mask-image: linear-gradient(90deg, transparent 0%, black 7%, black 93%, transparent 100%);
-      -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 7%, black 93%, transparent 100%);
-      cursor: grab;
+      mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%);
     }
-    .carousel-outer:active { cursor: grabbing; }
-    .carousel-track {
+    .scroll-track {
       display: flex;
       gap: 20px;
       padding: 12px 60px 20px;
       width: max-content;
-      transition: transform 0.45s cubic-bezier(0.23,1,0.32,1);
-      user-select: none;
+      animation: scrollLoop 55s linear infinite;
     }
-    .carousel-track.dragging { transition: none; }
-
-    .carousel-controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      margin-top: 28px;
-    }
-    .carousel-btn {
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 18px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
-    .carousel-btn:hover { background: var(--red); border-color: var(--red); color: white; box-shadow: 0 0 20px var(--red-glow); }
-    .carousel-btn:disabled { opacity: 0.3; pointer-events: none; }
-    .carousel-dots {
-      display: flex;
-      gap: 6px;
-    }
-    .carousel-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--border);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .carousel-dot.active {
-      width: 22px;
-      border-radius: 3px;
-      background: var(--red);
+    .scroll-track:hover { animation-play-state: paused; }
+    @keyframes scrollLoop {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
     .services-grid { display: contents; }
 
@@ -1214,7 +1174,6 @@
       margin-bottom: 64px;
     }
 
-    .testimonials-grid { display: contents; }
     .testimonial-card {
       flex-shrink: 0;
       width: 360px;
@@ -1445,16 +1404,14 @@
       /* marquee */
       .marquee-wrap { padding: 12px 0; }
 
-      /* carousels */
+      /* scroll tracks */
       .services-header { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 40px; }
-      .carousel-outer { margin: 0 -20px; }
-      .carousel-track { padding: 12px 20px 20px; }
+      .scroll-track-wrap { margin: 0 -20px; }
+      .scroll-track { padding: 12px 20px 20px; }
       .service-card { width: 280px; padding: 22px 18px; }
       .ai-card { width: 270px; }
       .testimonial-card { width: 300px; }
       .ai-header { grid-template-columns: 1fr; gap: 12px; }
-      .testimonials-grid { grid-template-columns: unset; }
-      .testimonials-grid { display: flex; }
 
       /* industries */
       .industries-tabs { gap: 6px; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -1871,9 +1828,8 @@
     <p class="section-desc">From a fresh website to a complete AI-powered operating system for your business. We build it, integrate it, and keep it running.</p>
   </div>
 
-  <div class="carousel-wrap reveal">
-  <div class="carousel-outer" id="servicesOuter">
-  <div class="carousel-track" id="servicesTrack">
+  <div class="scroll-track-wrap reveal">
+  <div class="scroll-track" id="servicesTrack">
 
     <!-- FEATURED: Website & App -->
     <div class="service-card">
@@ -2116,14 +2072,8 @@
       </div>
     </div>
 
-  </div><!-- /carousel-track -->
-  </div><!-- /carousel-outer -->
-  <div class="carousel-controls">
-    <button class="carousel-btn" id="servicesPrev">←</button>
-    <div class="carousel-dots" id="servicesDots"></div>
-    <button class="carousel-btn" id="servicesNext">→</button>
-  </div>
-  </div><!-- /carousel-wrap -->
+  </div><!-- /scroll-track -->
+  </div><!-- /scroll-track-wrap -->
 </section>
 
 <!-- ─── INDUSTRIES ─── -->
@@ -2873,9 +2823,8 @@
       </div>
       <p class="section-desc">We don't just bolt AI on — we weave it into every part of how your business operates. Hover any card to read.</p>
     </div>
-    <div class="carousel-wrap reveal">
-    <div class="carousel-outer" id="aiOuter">
-    <div class="carousel-track" id="aiTrack">
+    <div class="scroll-track-wrap reveal">
+    <div class="scroll-track" id="aiTrack" style="animation-duration:40s">
       <div class="ai-card">
         <div class="ai-card-icon">🤖</div>
         <div class="ai-card-title">AI Customer Assistant</div>
@@ -2912,14 +2861,8 @@
         <div class="ai-card-desc">Every AI tool we build works natively in Lebanese Arabic, Modern Standard Arabic, and English. Your customers communicate the way they're comfortable — and the AI understands every word.</div>
         <div class="ai-card-stat">✦ Built for Lebanon, not translated</div>
       </div>
-    </div><!-- /carousel-track -->
-    </div><!-- /carousel-outer -->
-    <div class="carousel-controls">
-      <button class="carousel-btn" id="aiPrev">←</button>
-      <div class="carousel-dots" id="aiDots"></div>
-      <button class="carousel-btn" id="aiNext">→</button>
-    </div>
-    </div><!-- /carousel-wrap -->
+    </div><!-- /scroll-track -->
+    </div><!-- /scroll-track-wrap -->
   </div><!-- /ai-layout -->
 </section>
 
@@ -2987,9 +2930,8 @@
     <span class="section-label">Testimonials</span>
     <h2 class="section-title">Trusted by Lebanese businesses</h2>
   </div>
-  <div class="carousel-wrap reveal">
-  <div class="carousel-outer" id="testimonialsOuter">
-  <div class="carousel-track testimonials-grid" id="testimonialsTrack">
+  <div class="scroll-track-wrap reveal">
+  <div class="scroll-track" id="testimonialsTrack" style="animation-duration:50s">
     <div class="testimonial-card">
       <div class="testimonial-stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
       <p class="testimonial-quote">"LOS transformed my restaurant completely. The AI chatbot handles all our WhatsApp orders and the waste tracking alone saved us $800 a month. I wish I had this 5 years ago."</p>
@@ -3062,14 +3004,8 @@
         <div><div class="testimonial-name">Charbel Rizk</div><div class="testimonial-role">Director, Horizon Learning Center — Jdeideh</div></div>
       </div>
     </div>
-  </div><!-- /carousel-track -->
-  </div><!-- /carousel-outer -->
-  <div class="carousel-controls">
-    <button class="carousel-btn" id="testimonialsPrev">←</button>
-    <div class="carousel-dots" id="testimonialsDots"></div>
-    <button class="carousel-btn" id="testimonialsNext">→</button>
-  </div>
-  </div><!-- /carousel-wrap -->
+  </div><!-- /scroll-track -->
+  </div><!-- /scroll-track-wrap -->
 </section>
 
 <!-- ─── CTA ─── -->
@@ -3139,65 +3075,12 @@
 </footer>
 
 <script>
-  // ─── CAROUSEL FACTORY ───
-  function makeCarousel({ outer, track, prevBtn, nextBtn, dotsEl, cardWidth }) {
-    const o = document.getElementById(outer);
-    const t = document.getElementById(track);
-    const prev = document.getElementById(prevBtn);
-    const next = document.getElementById(nextBtn);
-    const dots = document.getElementById(dotsEl);
-    if (!o || !t) return;
-
-    const gap = 20;
-    const cards = Array.from(t.children);
-    const total = cards.length;
-    const visibleCount = () => Math.round(o.offsetWidth / (cardWidth + gap));
-    let idx = 0;
-
-    // build dots
-    const dotEls = cards.map((_, i) => {
-      const d = document.createElement('div');
-      d.className = 'carousel-dot' + (i === 0 ? ' active' : '');
-      d.addEventListener('click', () => goTo(i));
-      dots.appendChild(d);
-      return d;
-    });
-
-    function goTo(i) {
-      idx = Math.max(0, Math.min(i, total - visibleCount()));
-      const offset = idx * (cardWidth + gap);
-      t.style.transform = `translateX(-${offset}px)`;
-      dotEls.forEach((d, j) => d.classList.toggle('active', j === idx));
-      if (prev) prev.disabled = idx === 0;
-      if (next) next.disabled = idx >= total - visibleCount();
-    }
-
-    if (prev) prev.addEventListener('click', () => goTo(idx - 1));
-    if (next) next.addEventListener('click', () => goTo(idx + 1));
-    window.addEventListener('resize', () => goTo(idx));
-    goTo(0);
-
-    // drag / swipe
-    let startX = 0, startIdx = 0, dragging = false;
-    o.addEventListener('mousedown', e => { dragging = true; startX = e.clientX; startIdx = idx; t.classList.add('dragging'); });
-    window.addEventListener('mousemove', e => {
-      if (!dragging) return;
-      const diff = startX - e.clientX;
-      const moved = Math.round(diff / (cardWidth + gap));
-      goTo(startIdx + moved);
-    });
-    window.addEventListener('mouseup', () => { dragging = false; t.classList.remove('dragging'); });
-    o.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startIdx = idx; }, { passive: true });
-    o.addEventListener('touchend', e => {
-      const diff = startX - e.changedTouches[0].clientX;
-      const moved = Math.round(diff / (cardWidth + gap));
-      goTo(startIdx + moved);
-    });
-  }
-
-  makeCarousel({ outer:'servicesOuter', track:'servicesTrack', prevBtn:'servicesPrev', nextBtn:'servicesNext', dotsEl:'servicesDots', cardWidth: window.innerWidth < 768 ? 280 : 340 });
-  makeCarousel({ outer:'aiOuter',       track:'aiTrack',       prevBtn:'aiPrev',       nextBtn:'aiNext',       dotsEl:'aiDots',       cardWidth: window.innerWidth < 768 ? 270 : 320 });
-  makeCarousel({ outer:'testimonialsOuter', track:'testimonialsTrack', prevBtn:'testimonialsPrev', nextBtn:'testimonialsNext', dotsEl:'testimonialsDots', cardWidth: window.innerWidth < 768 ? 300 : 360 });
+  // ─── DUPLICATE SCROLL TRACKS FOR SEAMLESS LOOP ───
+  ['servicesTrack', 'aiTrack', 'testimonialsTrack'].forEach(id => {
+    const track = document.getElementById(id);
+    if (!track) return;
+    track.innerHTML += track.innerHTML;
+  });
 
   // ─── HAMBURGER ───
   const hamburger = document.getElementById('hamburger');
