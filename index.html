@@ -540,14 +540,31 @@
       gap: 40px;
     }
 
-    /* ─── SERVICES GRID ─── */
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+    /* ─── SERVICES SCROLL TRACK ─── */
+    .services-track-wrap {
+      overflow: hidden;
+      margin: 0 -60px;
+      mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%);
+    }
+    .services-track {
+      display: flex;
       gap: 20px;
+      width: max-content;
+      animation: scrollTrack 60s linear infinite;
+    }
+    .services-track:hover { animation-play-state: paused; }
+    @keyframes scrollTrack {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .services-grid {
+      display: contents;
     }
 
     .service-card {
+      flex-shrink: 0;
+      width: 340px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 20px;
@@ -932,18 +949,33 @@
     }
 
     .ai-layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 64px;
-      align-items: start;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
       position: relative;
     }
-    .ai-cards {
+    .ai-header {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 40px;
+      align-items: end;
     }
+    .ai-track-wrap {
+      overflow: hidden;
+      margin: 0 -60px;
+      mask-image: linear-gradient(90deg, transparent 0%, black 5%, black 95%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 5%, black 95%, transparent 100%);
+    }
+    .ai-cards {
+      display: flex;
+      gap: 20px;
+      width: max-content;
+      animation: scrollTrack 45s linear infinite;
+    }
+    .ai-cards:hover { animation-play-state: paused; }
     .ai-card {
+      flex-shrink: 0;
+      width: 320px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 20px;
@@ -1378,8 +1410,12 @@
 
       /* services */
       .services-header { flex-direction: column; align-items: flex-start; gap: 16px; margin-bottom: 40px; }
-      .services-grid { grid-template-columns: 1fr; gap: 16px; }
-      .service-card { padding: 24px 20px; }
+      .services-track-wrap { margin: 0 -20px; }
+      .service-card { width: 280px; padding: 22px 18px; }
+      /* ai track */
+      .ai-track-wrap { margin: 0 -20px; }
+      .ai-card { width: 270px; }
+      .ai-header { grid-template-columns: 1fr; gap: 12px; }
 
       /* industries */
       .industries-tabs { gap: 6px; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 8px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -1796,7 +1832,9 @@
     <p class="section-desc">From a fresh website to a complete AI-powered operating system for your business. We build it, integrate it, and keep it running.</p>
   </div>
 
-  <div class="services-grid stagger reveal">
+  <div class="services-track-wrap reveal">
+  <div class="services-track" id="servicesTrack">
+    <!-- SET 1 -->
 
     <!-- FEATURED: Website & App -->
     <div class="service-card">
@@ -2039,7 +2077,8 @@
       </div>
     </div>
 
-  </div>
+  </div><!-- /services-track -->
+  </div><!-- /services-track-wrap -->
 </section>
 
 <!-- ─── INDUSTRIES ─── -->
@@ -2782,12 +2821,15 @@
 <section id="ai">
   <div class="ai-bg"></div>
   <div class="ai-layout">
-    <div class="reveal">
-      <span class="section-label">AI Capabilities</span>
-      <h2 class="section-title">The AI brain<br>behind your business</h2>
-      <p class="section-desc" style="margin-bottom:0">We don't just bolt AI on — we weave it into every part of how your business operates.</p>
+    <div class="ai-header reveal">
+      <div>
+        <span class="section-label">AI Capabilities</span>
+        <h2 class="section-title">The AI brain<br>behind your business</h2>
+      </div>
+      <p class="section-desc">We don't just bolt AI on — we weave it into every part of how your business operates. Hover any card to read.</p>
     </div>
-    <div class="ai-cards reveal">
+    <div class="ai-track-wrap reveal">
+    <div class="ai-cards" id="aiTrack">
       <div class="ai-card">
         <div class="ai-card-icon">🤖</div>
         <div class="ai-card-title">AI Customer Assistant</div>
@@ -2824,8 +2866,9 @@
         <div class="ai-card-desc">Every AI tool we build works natively in Lebanese Arabic, Modern Standard Arabic, and English. Your customers communicate the way they're comfortable — and the AI understands every word.</div>
         <div class="ai-card-stat">✦ Built for Lebanon, not translated</div>
       </div>
-    </div>
-  </div>
+    </div><!-- /ai-cards -->
+    </div><!-- /ai-track-wrap -->
+  </div><!-- /ai-layout -->
 </section>
 
 <!-- ─── PRICING ─── -->
@@ -3035,6 +3078,14 @@
 </footer>
 
 <script>
+  // ─── DUPLICATE SCROLL TRACKS ───
+  ['servicesTrack', 'aiTrack'].forEach(id => {
+    const track = document.getElementById(id);
+    if (!track) return;
+    const clone = track.innerHTML;
+    track.innerHTML += clone; // double it for seamless loop
+  });
+
   // ─── HAMBURGER ───
   const hamburger = document.getElementById('hamburger');
   const mobileMenu = document.getElementById('mobileMenu');
