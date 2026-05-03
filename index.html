@@ -1245,8 +1245,175 @@
       .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
     }
   </style>
+  <style>
+    /* ─── CURSOR ─── */
+    .cursor { position:fixed;width:12px;height:12px;background:var(--red);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.2s,height 0.2s,opacity 0.2s;mix-blend-mode:normal; }
+    .cursor-ring { position:fixed;width:36px;height:36px;border:1.5px solid rgba(232,25,44,0.5);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:all 0.12s ease;mix-blend-mode:normal; }
+    .cursor-glow { position:fixed;width:200px;height:200px;background:radial-gradient(circle,rgba(232,25,44,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:99997;transform:translate(-50%,-50%);transition:all 0.3s ease; }
+    body:has(.cursor) * { cursor:none !important; }
+    .cursor.hovering { width:20px;height:20px;background:rgba(232,25,44,0.5); }
+    .cursor-ring.hovering { width:52px;height:52px;border-color:rgba(232,25,44,0.8); }
+
+    /* ─── CANVAS ─── */
+    #particleCanvas { position:fixed;inset:0;z-index:0;pointer-events:none; }
+
+    /* ─── FLOATING SHAPES ─── */
+    .floating-shapes { position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden; }
+    .shape { position:absolute;border:1px solid rgba(232,25,44,0.15);border-radius:50%;animation:floatShape linear infinite; }
+    .shape-hex { clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);border-radius:0; }
+    @keyframes floatShape { 0%{transform:translateY(0) rotate(0deg);opacity:0.4} 50%{opacity:0.8} 100%{transform:translateY(-120vh) rotate(720deg);opacity:0} }
+
+    /* ─── SCANLINE ─── */
+    .scanline { position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(232,25,44,0.4),transparent);z-index:9998;pointer-events:none;animation:scan 8s linear infinite; }
+    @keyframes scan { 0%{top:-2px} 100%{top:100vh} }
+
+    /* ─── AURORA BG ─── */
+    .aurora { position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden; }
+    .aurora-blob { position:absolute;border-radius:50%;filter:blur(120px);animation:auroraFloat ease-in-out infinite; }
+    .aurora-1 { width:700px;height:700px;background:radial-gradient(circle,rgba(232,25,44,0.07) 0%,transparent 70%);top:-200px;left:-200px;animation-duration:12s; }
+    .aurora-2 { width:500px;height:500px;background:radial-gradient(circle,rgba(212,168,67,0.05) 0%,transparent 70%);top:30%;right:-150px;animation-duration:15s;animation-delay:-5s; }
+    .aurora-3 { width:400px;height:400px;background:radial-gradient(circle,rgba(232,25,44,0.06) 0%,transparent 70%);bottom:-100px;left:30%;animation-duration:10s;animation-delay:-3s; }
+    @keyframes auroraFloat { 0%,100%{transform:scale(1) translate(0,0)} 33%{transform:scale(1.1) translate(30px,-20px)} 66%{transform:scale(0.95) translate(-20px,30px)} }
+
+    /* ─── MOUSE FOLLOWER ORB ─── */
+    .mouse-orb { position:fixed;width:500px;height:500px;background:radial-gradient(circle,rgba(232,25,44,0.08) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:all 0.6s cubic-bezier(0.23,1,0.32,1); }
+
+    /* ─── GLITCH ─── */
+    @keyframes glitch1 { 0%,100%{clip-path:inset(0 0 98% 0);transform:translate(-4px,0)} 20%{clip-path:inset(40% 0 40% 0)} 40%{clip-path:inset(80% 0 2% 0);transform:translate(4px,0)} }
+    @keyframes glitch2 { 0%,100%{clip-path:inset(95% 0 0 0);transform:translate(4px,0)} 20%{clip-path:inset(20% 0 70% 0)} 40%{clip-path:inset(5% 0 85% 0);transform:translate(-4px,0)} }
+    .glitch { position:relative; }
+    .glitch::before,.glitch::after { content:attr(data-text);position:absolute;inset:0;background:var(--bg); }
+    .glitch::before { color:#ff003c;animation:glitch1 4s infinite linear;text-shadow:2px 0 #00ffff; }
+    .glitch::after { color:#00ffff;animation:glitch2 4s infinite linear 0.5s;text-shadow:-2px 0 #ff003c; }
+
+    /* ─── NEON CARD ─── */
+    .neon-card { position:relative;transform-style:preserve-3d;transition:transform 0.1s; }
+    .neon-card::after { content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,transparent 50%,rgba(232,25,44,0.04) 100%);opacity:0;transition:opacity 0.3s;pointer-events:none; }
+    .neon-card:hover::after { opacity:1; }
+    .neon-card .shine { position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,0.08) 0%,transparent 60%);pointer-events:none;z-index:1; }
+
+    /* ─── MAGNETIC BTN ─── */
+    .magnetic { display:inline-block;transition:transform 0.3s cubic-bezier(0.23,1,0.32,1); }
+
+    /* ─── BORDER GLOW ANIMATE ─── */
+    @keyframes borderRotate { 0%{--angle:0deg} 100%{--angle:360deg} }
+    @property --angle { syntax:'<angle>';initial-value:0deg;inherits:false; }
+    .glow-border { --angle:0deg;border:1.5px solid transparent;background:linear-gradient(var(--bg2),var(--bg2)) padding-box,conic-gradient(from var(--angle),transparent 70%,rgba(232,25,44,0.8) 80%,transparent 90%) border-box;animation:borderRotate 4s linear infinite; }
+
+    /* ─── PULSE RING ─── */
+    .pulse-ring { position:relative; }
+    .pulse-ring::before { content:'';position:absolute;inset:-8px;border-radius:inherit;border:1px solid rgba(232,25,44,0.4);animation:pulseRing 2s ease-out infinite; }
+    @keyframes pulseRing { 0%{transform:scale(1);opacity:0.8} 100%{transform:scale(1.3);opacity:0} }
+
+    /* ─── TYPEWRITER ─── */
+    .typewriter { overflow:hidden;white-space:nowrap;border-right:2px solid var(--red);animation:typewrite 3s steps(40,end) both,blink-caret 0.75s step-end infinite; }
+    @keyframes typewrite { from{width:0} to{width:100%} }
+    @keyframes blink-caret { from,to{border-color:transparent} 50%{border-color:var(--red)} }
+
+    /* ─── RIPPLE ─── */
+    .ripple-btn { position:relative;overflow:hidden; }
+    .ripple-btn .ripple { position:absolute;border-radius:50%;background:rgba(255,255,255,0.25);transform:scale(0);animation:rippleAnim 0.6s linear; }
+    @keyframes rippleAnim { to{transform:scale(4);opacity:0} }
+
+    /* ─── FLOATING BADGES ─── */
+    .float-badge { animation:floatBadge 3s ease-in-out infinite; }
+    .float-badge:nth-child(2) { animation-delay:-1s; }
+    .float-badge:nth-child(3) { animation-delay:-2s; }
+    @keyframes floatBadge { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+    /* ─── HERO FLOATING CARDS ─── */
+    .hero-float-cards { position:absolute;inset:0;pointer-events:none;z-index:1; }
+    .hero-float-card { position:absolute;background:rgba(20,20,30,0.8);border:1px solid rgba(232,25,44,0.2);border-radius:12px;padding:12px 16px;font-size:12px;color:var(--text);backdrop-filter:blur(10px);display:flex;align-items:center;gap:8px;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+    .hero-float-card-dot { width:8px;height:8px;border-radius:50%;background:var(--red);animation:blink 2s infinite; }
+    .hfc-1 { top:22%;left:6%;animation:hfc1 6s ease-in-out infinite; }
+    .hfc-2 { top:30%;right:6%;animation:hfc2 7s ease-in-out infinite; }
+    .hfc-3 { bottom:22%;left:8%;animation:hfc3 5s ease-in-out infinite; }
+    .hfc-4 { bottom:28%;right:7%;animation:hfc4 8s ease-in-out infinite; }
+    @keyframes hfc1 { 0%,100%{transform:translateY(0) rotate(-2deg)} 50%{transform:translateY(-14px) rotate(1deg)} }
+    @keyframes hfc2 { 0%,100%{transform:translateY(0) rotate(2deg)} 50%{transform:translateY(-18px) rotate(-1deg)} }
+    @keyframes hfc3 { 0%,100%{transform:translateY(0) rotate(1deg)} 50%{transform:translateY(-10px) rotate(-2deg)} }
+    @keyframes hfc4 { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-16px) rotate(2deg)} }
+
+    /* ─── CIRCUIT LINES ─── */
+    .circuit-svg { position:absolute;inset:0;pointer-events:none;opacity:0.12;z-index:0; }
+
+    /* ─── GLOW TEXT ─── */
+    .glow-red { text-shadow:0 0 20px rgba(232,25,44,0.6),0 0 40px rgba(232,25,44,0.3); }
+
+    /* ─── LIVE INDICATOR ─── */
+    .live-dot { display:inline-block;width:8px;height:8px;background:#22c55e;border-radius:50%;box-shadow:0 0 8px #22c55e;animation:blink 1.5s infinite; }
+
+    /* ─── STATS ANIMATED ─── */
+    .stat-card { transition:transform 0.3s,box-shadow 0.3s; }
+    .stat-card:hover { transform:translateY(-6px) scale(1.02);box-shadow:0 20px 60px rgba(232,25,44,0.15); }
+
+    /* ─── MARQUEE ─── */
+    .marquee-wrap { overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 0;background:var(--bg); }
+    .marquee { display:flex;gap:48px;animation:marquee 20s linear infinite;white-space:nowrap; }
+    .marquee-item { display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;color:var(--muted);flex-shrink:0; }
+    .marquee-item span { color:var(--red);font-size:18px; }
+    @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+    /* ─── FLOATING CONTACT ─── */
+    .fab { position:fixed;bottom:32px;right:32px;z-index:500;display:flex;flex-direction:column;align-items:flex-end;gap:12px; }
+    .fab-btn { width:56px;height:56px;border-radius:50%;background:var(--red);border:none;display:flex;align-items:center;justify-content:center;cursor:none;font-size:22px;box-shadow:0 0 0 0 rgba(232,25,44,0.5);animation:fabPulse 2s infinite;transition:transform 0.2s; }
+    .fab-btn:hover { transform:scale(1.1); }
+    @keyframes fabPulse { 0%{box-shadow:0 0 0 0 rgba(232,25,44,0.5)} 70%{box-shadow:0 0 0 16px rgba(232,25,44,0)} 100%{box-shadow:0 0 0 0 rgba(232,25,44,0)} }
+    .fab-menu { display:flex;flex-direction:column;gap:10px;align-items:flex-end;opacity:0;transform:translateY(10px) scale(0.95);pointer-events:none;transition:all 0.3s; }
+    .fab-menu.open { opacity:1;transform:translateY(0) scale(1);pointer-events:all; }
+    .fab-item { display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:10px 18px;font-size:13px;font-weight:600;color:var(--text);text-decoration:none;transition:all 0.2s;white-space:nowrap; }
+    .fab-item:hover { background:var(--red);border-color:var(--red);color:white; }
+
+    /* ─── SCROLL PROGRESS ─── */
+    .scroll-progress { position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--red),#ff6b7a);z-index:200;width:0;transition:width 0.1s; }
+
+    /* ─── DATA TICKER ─── */
+    .data-ticker { display:flex;align-items:center;gap:8px;font-size:12px;font-family:'Space Grotesk',sans-serif; }
+    .ticker-val { color:var(--red);font-weight:700; }
+
+    /* ─── REVEAL VARIANTS ─── */
+    .reveal-left { opacity:0;transform:translateX(-40px);transition:opacity 0.7s ease,transform 0.7s ease; }
+    .reveal-right { opacity:0;transform:translateX(40px);transition:opacity 0.7s ease,transform 0.7s ease; }
+    .reveal-scale { opacity:0;transform:scale(0.92);transition:opacity 0.7s ease,transform 0.7s ease; }
+    .reveal-left.visible,.reveal-right.visible,.reveal-scale.visible { opacity:1;transform:none; }
+
+    /* stagger children */
+    .stagger > * { opacity:0;transform:translateY(30px);transition:opacity 0.5s ease,transform 0.5s ease; }
+    .stagger.visible > *:nth-child(1){transition-delay:0s}
+    .stagger.visible > *:nth-child(2){transition-delay:0.08s}
+    .stagger.visible > *:nth-child(3){transition-delay:0.16s}
+    .stagger.visible > *:nth-child(4){transition-delay:0.24s}
+    .stagger.visible > *:nth-child(5){transition-delay:0.32s}
+    .stagger.visible > *:nth-child(6){transition-delay:0.4s}
+    .stagger.visible > * { opacity:1;transform:none; }
+  </style>
 </head>
 <body>
+
+<!-- ─── GLOBAL FX ELEMENTS ─── -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+<div class="mouse-orb" id="mouseOrb"></div>
+<div class="scanline"></div>
+<div class="scroll-progress" id="scrollProgress"></div>
+<canvas id="particleCanvas"></canvas>
+
+<div class="aurora">
+  <div class="aurora-blob aurora-1"></div>
+  <div class="aurora-blob aurora-2"></div>
+  <div class="aurora-blob aurora-3"></div>
+</div>
+
+<!-- ─── FLOATING ACTION BUTTON ─── -->
+<div class="fab" id="fab">
+  <div class="fab-menu" id="fabMenu">
+    <a class="fab-item" href="https://wa.me/96170000000" target="_blank">💬 WhatsApp Us</a>
+    <button class="fab-item" onclick="openModal()">📅 Book Consultation</button>
+    <a class="fab-item" href="mailto:hello@los.lb">✉️ Email Us</a>
+  </div>
+  <button class="fab-btn" id="fabBtn" title="Contact Us">🚀</button>
+</div>
 
 <!-- ─── CONTACT MODAL ─── -->
 <div class="modal-overlay" id="contactModal">
@@ -1355,6 +1522,14 @@
     </a>
   </div>
 
+  <!-- floating info cards -->
+  <div class="hero-float-cards">
+    <div class="hero-float-card hfc-1"><span class="hero-float-card-dot"></span>🍽️ Restaurant AI — Live</div>
+    <div class="hero-float-card hfc-2"><span class="live-dot"></span>&nbsp;47 businesses upgraded today</div>
+    <div class="hero-float-card hfc-3">📈 +34% avg revenue boost</div>
+    <div class="hero-float-card hfc-4">🤖 AI running 24/7 for you</div>
+  </div>
+
   <div class="hero-scroll">
     <div class="hero-scroll-line"></div>
     <span>Scroll</span>
@@ -1378,6 +1553,55 @@
   <div class="stat-divider">
     <div class="stat-num"><span id="c4">0</span>+</div>
     <div class="stat-label">AI Integrations Deployed</div>
+  </div>
+</div>
+
+<!-- ─── MARQUEE ─── -->
+<div class="marquee-wrap">
+  <div class="marquee" id="marquee">
+    <div class="marquee-item"><span>🍽️</span> Restaurants</div>
+    <div class="marquee-item"><span>☕</span> Coffee Shops</div>
+    <div class="marquee-item"><span>🔧</span> Mechanics</div>
+    <div class="marquee-item"><span>🛍️</span> Retail</div>
+    <div class="marquee-item"><span>💇</span> Salons</div>
+    <div class="marquee-item"><span>💊</span> Pharmacies</div>
+    <div class="marquee-item"><span>🏋️</span> Gyms</div>
+    <div class="marquee-item"><span>🍞</span> Bakeries</div>
+    <div class="marquee-item"><span>🛒</span> Supermarkets</div>
+    <div class="marquee-item"><span>🦷</span> Clinics</div>
+    <div class="marquee-item"><span>🏨</span> Hotels</div>
+    <div class="marquee-item"><span>🏠</span> Real Estate</div>
+    <div class="marquee-item"><span>🎉</span> Catering</div>
+    <div class="marquee-item"><span>🚚</span> Logistics</div>
+    <div class="marquee-item"><span>🔌</span> Electronics</div>
+    <div class="marquee-item"><span>🚗</span> Car Dealers</div>
+    <div class="marquee-item"><span>🎓</span> Schools</div>
+    <div class="marquee-item"><span>🐾</span> Vet & Pets</div>
+    <div class="marquee-item"><span>🏗️</span> Construction</div>
+    <div class="marquee-item"><span>🧹</span> Cleaning</div>
+    <div class="marquee-item"><span>🎨</span> Agencies</div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item"><span>🍽️</span> Restaurants</div>
+    <div class="marquee-item"><span>☕</span> Coffee Shops</div>
+    <div class="marquee-item"><span>🔧</span> Mechanics</div>
+    <div class="marquee-item"><span>🛍️</span> Retail</div>
+    <div class="marquee-item"><span>💇</span> Salons</div>
+    <div class="marquee-item"><span>💊</span> Pharmacies</div>
+    <div class="marquee-item"><span>🏋️</span> Gyms</div>
+    <div class="marquee-item"><span>🍞</span> Bakeries</div>
+    <div class="marquee-item"><span>🛒</span> Supermarkets</div>
+    <div class="marquee-item"><span>🦷</span> Clinics</div>
+    <div class="marquee-item"><span>🏨</span> Hotels</div>
+    <div class="marquee-item"><span>🏠</span> Real Estate</div>
+    <div class="marquee-item"><span>🎉</span> Catering</div>
+    <div class="marquee-item"><span>🚚</span> Logistics</div>
+    <div class="marquee-item"><span>🔌</span> Electronics</div>
+    <div class="marquee-item"><span>🚗</span> Car Dealers</div>
+    <div class="marquee-item"><span>🎓</span> Schools</div>
+    <div class="marquee-item"><span>🐾</span> Vet & Pets</div>
+    <div class="marquee-item"><span>🏗️</span> Construction</div>
+    <div class="marquee-item"><span>🧹</span> Cleaning</div>
+    <div class="marquee-item"><span>🎨</span> Agencies</div>
   </div>
 </div>
 
@@ -2383,6 +2607,215 @@
 </footer>
 
 <script>
+  // ─── CUSTOM CURSOR ───
+  const cursor = document.getElementById('cursor');
+  const cursorRing = document.getElementById('cursorRing');
+  const cursorGlow = document.getElementById('cursorGlow');
+  const mouseOrb = document.getElementById('mouseOrb');
+  let mx = window.innerWidth/2, my = window.innerHeight/2;
+  let rx = mx, ry = my, gx = mx, gy = my;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    mouseOrb.style.left = mx + 'px'; mouseOrb.style.top = my + 'px';
+  });
+
+  (function animCursor() {
+    rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+    gx += (mx - gx) * 0.06; gy += (my - gy) * 0.06;
+    cursorRing.style.left = rx + 'px'; cursorRing.style.top = ry + 'px';
+    cursorGlow.style.left = gx + 'px'; cursorGlow.style.top = gy + 'px';
+    requestAnimationFrame(animCursor);
+  })();
+
+  document.querySelectorAll('a,button,[data-tab],.service-card,.ai-card,.pricing-card,.testimonial-card,.how-step').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.classList.add('hovering'); cursorRing.classList.add('hovering'); });
+    el.addEventListener('mouseleave', () => { cursor.classList.remove('hovering'); cursorRing.classList.remove('hovering'); });
+  });
+
+  // ─── PARTICLE CANVAS ───
+  const canvas = document.getElementById('particleCanvas');
+  const ctx = canvas.getContext('2d');
+  let W = canvas.width = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
+
+  const PARTICLE_COUNT = 80;
+  const particles = Array.from({length: PARTICLE_COUNT}, () => ({
+    x: Math.random() * W, y: Math.random() * H,
+    vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4,
+    r: Math.random()*1.8+0.4,
+    opacity: Math.random()*0.5+0.1,
+    color: Math.random() > 0.7 ? '232,25,44' : '255,255,255'
+  }));
+
+  function drawParticles() {
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p => {
+      // mouse attraction
+      const dx = mx - p.x, dy = my - p.y;
+      const dist = Math.sqrt(dx*dx+dy*dy);
+      if (dist < 180) { p.vx += dx/dist*0.02; p.vy += dy/dist*0.02; }
+      p.vx *= 0.99; p.vy *= 0.99;
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${p.color},${p.opacity})`;
+      ctx.fill();
+    });
+    // draw connections
+    for (let i=0;i<particles.length;i++) {
+      for (let j=i+1;j<particles.length;j++) {
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if (d<100) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle=`rgba(232,25,44,${0.12*(1-d/100)})`;
+          ctx.lineWidth=0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+
+  // ─── SCROLL PROGRESS ───
+  const progressBar = document.getElementById('scrollProgress');
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+    progressBar.style.width = pct + '%';
+  });
+
+  // ─── 3D CARD TILT ───
+  function applyTilt(cards) {
+    cards.forEach(card => {
+      card.classList.add('neon-card');
+      const shine = document.createElement('div');
+      shine.className = 'shine';
+      card.appendChild(shine);
+      card.addEventListener('mousemove', e => {
+        const r = card.getBoundingClientRect();
+        const x = e.clientX - r.left, y = e.clientY - r.top;
+        const cx = r.width/2, cy = r.height/2;
+        const rotX = (y-cy)/cy * -10;
+        const rotY = (x-cx)/cx * 10;
+        card.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.02)`;
+        const pctX = (x/r.width)*100, pctY = (y/r.height)*100;
+        shine.style.setProperty('--mx', pctX+'%');
+        shine.style.setProperty('--my', pctY+'%');
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) scale(1)';
+      });
+    });
+  }
+  applyTilt(document.querySelectorAll('.service-card,.ai-card,.pricing-card,.testimonial-card,.how-step'));
+
+  // ─── MAGNETIC BUTTONS ───
+  document.querySelectorAll('.btn-primary,.btn-secondary,.nav-cta').forEach(btn => {
+    btn.classList.add('magnetic');
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      const dx = e.clientX - (r.left + r.width/2);
+      const dy = e.clientY - (r.top + r.height/2);
+      btn.style.transform = `translate(${dx*0.25}px,${dy*0.35}px)`;
+    });
+    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+  });
+
+  // ─── RIPPLE BUTTONS ───
+  document.querySelectorAll('.btn-primary,.btn-pricing-solid,.form-submit,.fab-item').forEach(btn => {
+    btn.classList.add('ripple-btn');
+    btn.addEventListener('click', e => {
+      const r = btn.getBoundingClientRect();
+      const size = Math.max(r.width, r.height) * 2;
+      const x = e.clientX - r.left - size/2;
+      const y = e.clientY - r.top - size/2;
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      ripple.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+      btn.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    });
+  });
+
+  // ─── GLITCH HERO TITLE ───
+  const losTitle = document.querySelector('.hero-title-los');
+  if (losTitle) {
+    losTitle.classList.add('glitch');
+    losTitle.setAttribute('data-text', losTitle.textContent);
+  }
+
+  // ─── HERO TYPEWRITER ───
+  const heroDesc = document.querySelector('.hero-desc');
+  if (heroDesc) {
+    const original = heroDesc.textContent.trim();
+    heroDesc.textContent = '';
+    let i = 0;
+    const type = () => { if (i < original.length) { heroDesc.textContent += original[i++]; setTimeout(type, 18); } };
+    setTimeout(type, 900);
+  }
+
+  // ─── FAB TOGGLE ───
+  const fabBtn = document.getElementById('fabBtn');
+  const fabMenu = document.getElementById('fabMenu');
+  let fabOpen = false;
+  fabBtn.addEventListener('click', () => {
+    fabOpen = !fabOpen;
+    fabMenu.classList.toggle('open', fabOpen);
+    fabBtn.textContent = fabOpen ? '✕' : '🚀';
+  });
+  document.addEventListener('click', e => {
+    if (!document.getElementById('fab').contains(e.target) && fabOpen) {
+      fabOpen = false; fabMenu.classList.remove('open'); fabBtn.textContent = '🚀';
+    }
+  });
+
+  // ─── FLOATING SHAPES GENERATOR ───
+  const hero = document.querySelector('.hero');
+  const shapeCount = 12;
+  for (let i = 0; i < shapeCount; i++) {
+    const s = document.createElement('div');
+    const size = 20 + Math.random()*60;
+    s.className = 'shape' + (Math.random()>0.5?' shape-hex':'');
+    s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${80+Math.random()*40}%;animation-duration:${8+Math.random()*16}s;animation-delay:-${Math.random()*20}s;opacity:${0.05+Math.random()*0.15}`;
+    hero.appendChild(s);
+  }
+
+  // ─── SERVICE CARDS GLOW BORDER on hover ───
+  document.querySelectorAll('.service-card').forEach(card => {
+    card.addEventListener('mouseenter', () => card.classList.add('glow-border'));
+    card.addEventListener('mouseleave', () => card.classList.remove('glow-border'));
+  });
+
+  // ─── STAGGER REVEAL OBSERVER ───
+  const allReveals = document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale,.stagger');
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach((entry, idx) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+          entry.target.querySelectorAll('.metric-bar').forEach(bar => { bar.style.width = bar.dataset.width + '%'; });
+        }, 0);
+        revealObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  allReveals.forEach(el => revealObs.observe(el));
+
+  // ─── MARQUEE PAUSE ON HOVER ───
+  const marqueeEl = document.getElementById('marquee');
+  if (marqueeEl) {
+    marqueeEl.addEventListener('mouseenter', () => marqueeEl.style.animationPlayState = 'paused');
+    marqueeEl.addEventListener('mouseleave', () => marqueeEl.style.animationPlayState = 'running');
+  }
+
   // ─── MODAL ───
   const modal = document.getElementById('contactModal');
   const modalClose = document.getElementById('modalClose');
